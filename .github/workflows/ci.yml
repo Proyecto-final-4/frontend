@@ -11,8 +11,8 @@ jobs:
     name: Lint, format and test
     runs-on: ubuntu-latest
     env:
-      BACKEND_JAVA_ENDPOINT: ${{ vars.BACKEND_JAVA_ENDPOINT }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      BACKEND_JAVA_ENDPOINT: ${{ vars.BACKEND_JAVA_ENDPOINT || 'http://localhost:8080' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'ci-placeholder-key' }}
 
     steps:
       - name: Checkout repository

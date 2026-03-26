@@ -4,6 +4,7 @@ const OPENAI_KEY_PATTERN = /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/;
 const OPENAI_KEY_ASSIGNMENT_REGEX = /OPENAI_API_KEY\s*[:=]\s*(.+)/i;
 const SAFE_ASSIGNMENT_VALUE_PATTERNS = [
   /^\$\{\{\s*secrets\.OPENAI_API_KEY\s*\}\}$/i,
+  /^\$\{\{\s*secrets\.OPENAI_API_KEY\s*\|\|\s*['"][^'"]*['"]\s*\}\}$/i,
   /^\$\{\{\s*vars\.[A-Z0-9_]+\s*\}\}$/i,
   /^\$[A-Z_][A-Z0-9_]*$/,
   /^\$\{[A-Z_][A-Z0-9_]*\}$/,
