@@ -1,12 +1,50 @@
 import { execSync } from "node:child_process";
 
-const blockedPatterns = [
-  /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/,
-  /OPENAI_API_KEY\s*[:=]\s*["']?[^\s"']+/i,
+const OPENAI_KEY_PATTERN = /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/;
+const OPENAI_KEY_ASSIGNMENT_REGEX = /OPENAI_API_KEY\s*[:=]\s*(.+)/i;
+const SAFE_ASSIGNMENT_VALUE_PATTERNS = [
+  /^\$\{\{\s*secrets\.OPENAI_API_KEY\s*\}\}$/i,
+  /^\$\{\{\s*vars\.[A-Z0-9_]+\s*\}\}$/i,
+  /^\$[A-Z_][A-Z0-9_]*$/,
+  /^\$\{[A-Z_][A-Z0-9_]*\}$/,
+  /^process\.env\.OPENAI_API_KEY$/i,
+  /^import\.meta\.env\.[A-Z0-9_]*OPENAI[A-Z0-9_]*$/i,
+  /^os\.getenv\(["']OPENAI_API_KEY["']\)$/i,
+  /^<replace/i,
+  /^<your/i,
+  /^changeme$/i,
+  /^xxx+$/i,
 ];
 
-function hasBlockedSecret(content) {
-  return blockedPatterns.some((pattern) => pattern.test(content));
+function isSafeAssignmentValue(value) {
+  return SAFE_ASSIGNMENT_VALUE_PATTERNS.some((pattern) => pattern.test(value));
+}
+
+function normalizeAssignedValue(rawValue) {
+  return rawValue
+    .trim()
+    .replace(/[,;]\s*$/, "")
+    .replace(/^['"`]\s*/, "")
+    .replace(/\s*['"`]$/, "")
+    .trim();
+}
+
+function hasHardcodedOpenAiEnvValue(line) {
+  const assignmentMatch = line.match(OPENAI_KEY_ASSIGNMENT_REGEX);
+  if (!assignmentMatch) {
+    return false;
+  }
+
+  const value = normalizeAssignedValue(assignmentMatch[1] ?? "");
+  if (!value) {
+    return false;
+  }
+
+  if (isSafeAssignmentValue(value)) {
+    return false;
+  }
+
+  return true;
 }
 
 function getAddedLinesFromDiff() {
@@ -21,24 +59,11 @@ function getAddedLinesFromDiff() {
     .map((line) => line.slice(1));
 }
 
-function isSafeOpenAiEnvAssignment(line) {
-  if (!/OPENAI_API_KEY\s*[:=]/i.test(line)) {
-    return false;
-  }
-
-  return (
-    /OPENAI_API_KEY\s*[:=]\s*["']?<replace/i.test(line) ||
-    /OPENAI_API_KEY\s*[:=]\s*["']?<your/i.test(line) ||
-    /OPENAI_API_KEY\s*[:=]\s*["']?changeme/i.test(line) ||
-    /OPENAI_API_KEY\s*[:=]\s*["']?xxx+/i.test(line)
-  );
-}
-
 try {
   const addedDiffLines = getAddedLinesFromDiff();
 
   const riskyLines = addedDiffLines.filter(
-    (line) => hasBlockedSecret(line) && !isSafeOpenAiEnvAssignment(line),
+    (line) => OPENAI_KEY_PATTERN.test(line) || hasHardcodedOpenAiEnvValue(line),
   );
 
   if (riskyLines.length > 0) {
