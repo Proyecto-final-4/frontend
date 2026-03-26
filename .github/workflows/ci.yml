@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  quality:
+    name: Lint, format and test
+    runs-on: ubuntu-latest
+    env:
+      BACKEND_JAVA_ENDPOINT: ${{ vars.BACKEND_JAVA_ENDPOINT }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate required environment variables
+        run: npm run validate:env
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run formatter check
+        run: npm run format:check
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build app
+        run: npm run build
