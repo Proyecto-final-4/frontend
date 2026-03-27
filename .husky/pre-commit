@@ -1,2 +1,5 @@
 #!/usr/bin/env sh
-npm run precommit:checks
+npm run secrets:scan
+npm run format
+git add -u
+npm run lint

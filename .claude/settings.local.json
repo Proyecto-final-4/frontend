@@ -1,8 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(cd:*)",
-      "Bash(npx shadcn@latest init -d)"
-    ]
+    "allow": ["Bash(cd:*)", "Bash(npx shadcn@latest init -d)"]
   }
 }

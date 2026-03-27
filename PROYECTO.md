@@ -7,47 +7,54 @@ orquesta las llamadas a la API Java y gestiona toda la lógica de IA con LangCha
 
 ## Stack
 
-| Capa | Tecnología |
-|------|-----------|
-| Framework | Next.js 16 (App Router) |
-| UI | React 19 + Tailwind v4 + Shadcn |
-| Lenguaje | TypeScript 5 |
-| IA / Orquestación | LangChain + LangGraph |
-| Backend | API Java (Spring Boot 4, JWT) |
-| Base de datos vectorial | pgvector vía el backend Java |
+| Capa                    | Tecnología                      |
+| ----------------------- | ------------------------------- |
+| Framework               | Next.js 16 (App Router)         |
+| UI                      | React 19 + Tailwind v4 + Shadcn |
+| Lenguaje                | TypeScript 5                    |
+| IA / Orquestación       | LangChain + LangGraph           |
+| Backend                 | API Java (Spring Boot 4, JWT)   |
+| Base de datos vectorial | pgvector vía el backend Java    |
 
 ---
 
 ## Requisitos funcionales
 
 ### Autenticación
+
 - Registro de usuarios (nombre, email, contraseña)
 - Login con JWT — el token se gestiona en el BFF (Next.js API routes)
 - Perfil de usuario: ver y actualizar nombre y contraseña
 
 ### Transacciones
+
 - Listar con filtros: tipo (INCOME / EXPENSE), categoría, rango de fechas, paginación
 - Crear, editar y eliminar transacciones
 - Ver detalle de una transacción
 
 ### Categorías
+
 - Listar categorías del sistema y del usuario
 - Crear, editar y eliminar categorías propias
 - Jerarquía: una categoría puede tener una categoría padre
 
 ### Resumen financiero
+
 - Balance, ingresos totales y gastos totales por período
 - Desglose por categoría
 
-### Presupuestos *(backend pendiente)*
+### Presupuestos _(backend pendiente)_
+
 - Crear presupuesto por categoría y período (DAILY / WEEKLY / MONTHLY)
 - Ver estado: gasto actual vs límite
 
-### Metas de ahorro *(backend pendiente)*
+### Metas de ahorro _(backend pendiente)_
+
 - Crear y gestionar metas con monto objetivo y fecha límite
 - Marcar como completadas
 
-### IA — Búsqueda RAG *(base lista, implementación futura)*
+### IA — Búsqueda RAG _(base lista, implementación futura)_
+
 - Búsqueda semántica en el historial de transacciones
 - Agentes LangGraph para análisis financiero conversacional
 
@@ -58,70 +65,79 @@ orquesta las llamadas a la API Java y gestiona toda la lógica de IA con LangCha
 Base URL (server-side): `BACKEND_JAVA_ENDPOINT` (env var)
 
 ### Health
-| Método | Ruta | Auth |
-|--------|------|------|
-| GET | `/health` | No |
+
+| Método | Ruta      | Auth |
+| ------ | --------- | ---- |
+| GET    | `/health` | No   |
 
 ### Auth
-| Método | Ruta | Body | Respuesta |
-|--------|------|------|-----------|
-| POST | `/auth/register` | `{ name, email, password }` | `{ token, id, name, email }` |
-| POST | `/auth/login` | `{ email, password }` | `{ token, id, name, email }` |
+
+| Método | Ruta             | Body                        | Respuesta                    |
+| ------ | ---------------- | --------------------------- | ---------------------------- |
+| POST   | `/auth/register` | `{ name, email, password }` | `{ token, id, name, email }` |
+| POST   | `/auth/login`    | `{ email, password }`       | `{ token, id, name, email }` |
 
 ### Usuarios
-| Método | Ruta | Notas |
-|--------|------|-------|
-| GET | `/users/me` | JWT requerido |
-| PUT | `/users/me` | `{ name?, currentPassword?, newPassword? }` |
+
+| Método | Ruta        | Notas                                       |
+| ------ | ----------- | ------------------------------------------- |
+| GET    | `/users/me` | JWT requerido                               |
+| PUT    | `/users/me` | `{ name?, currentPassword?, newPassword? }` |
 
 ### Categorías
-| Método | Ruta | Notas |
-|--------|------|-------|
-| GET | `/categories` | Sistema + usuario |
-| POST | `/categories` | `{ name, type, color?, icon?, parentId? }` |
-| PUT | `/categories/{id}` | Mismo body que POST |
-| DELETE | `/categories/{id}` | Solo las del usuario |
+
+| Método | Ruta               | Notas                                      |
+| ------ | ------------------ | ------------------------------------------ |
+| GET    | `/categories`      | Sistema + usuario                          |
+| POST   | `/categories`      | `{ name, type, color?, icon?, parentId? }` |
+| PUT    | `/categories/{id}` | Mismo body que POST                        |
+| DELETE | `/categories/{id}` | Solo las del usuario                       |
 
 `type`: `INCOME` \| `EXPENSE` \| `BOTH`
 
 ### Transacciones
-| Método | Ruta | Query params |
-|--------|------|-------------|
-| GET | `/transactions` | `type?`, `categoryId?`, `from?`, `to?`, `page?` (0-idx), `size?` (def. 20) |
-| GET | `/transactions/{id}` | — |
-| POST | `/transactions` | `{ categoryId, amount, type, transactionDate, description, notes? }` |
-| PUT | `/transactions/{id}` | Mismo body que POST |
-| DELETE | `/transactions/{id}` | — |
+
+| Método | Ruta                 | Query params                                                               |
+| ------ | -------------------- | -------------------------------------------------------------------------- |
+| GET    | `/transactions`      | `type?`, `categoryId?`, `from?`, `to?`, `page?` (0-idx), `size?` (def. 20) |
+| GET    | `/transactions/{id}` | —                                                                          |
+| POST   | `/transactions`      | `{ categoryId, amount, type, transactionDate, description, notes? }`       |
+| PUT    | `/transactions/{id}` | Mismo body que POST                                                        |
+| DELETE | `/transactions/{id}` | —                                                                          |
 
 `type`: `INCOME` \| `EXPENSE` — fechas en `YYYY-MM-DD`
 
 ### Resumen
-| Método | Ruta | Query params |
-|--------|------|-------------|
-| GET | `/summary` | `from?`, `to?` (YYYY-MM-DD) |
+
+| Método | Ruta       | Query params                |
+| ------ | ---------- | --------------------------- |
+| GET    | `/summary` | `from?`, `to?` (YYYY-MM-DD) |
 
 ### RAG
-| Método | Ruta | Body |
-|--------|------|------|
-| POST | `/rag/search` | `{ query: string, limit: number }` |
+
+| Método | Ruta          | Body                               |
+| ------ | ------------- | ---------------------------------- |
+| POST   | `/rag/search` | `{ query: string, limit: number }` |
 
 Respuesta RAG: `Array<{ id, description, notes, amount, type, transactionDate, categoryName }>`
 
-### Presupuestos *(pendiente en backend)*
-| Método | Ruta |
-|--------|------|
-| GET | `/budgets` |
-| POST | `/budgets` |
-| PUT | `/budgets/{id}` |
-| DELETE | `/budgets/{id}` |
-| GET | `/budgets/{id}/status` |
+### Presupuestos _(pendiente en backend)_
 
-### Metas de ahorro *(pendiente en backend)*
-| Método | Ruta |
-|--------|------|
-| GET | `/goals` |
-| POST | `/goals` |
-| PUT | `/goals/{id}` |
+| Método | Ruta                   |
+| ------ | ---------------------- |
+| GET    | `/budgets`             |
+| POST   | `/budgets`             |
+| PUT    | `/budgets/{id}`        |
+| DELETE | `/budgets/{id}`        |
+| GET    | `/budgets/{id}/status` |
+
+### Metas de ahorro _(pendiente en backend)_
+
+| Método | Ruta          |
+| ------ | ------------- |
+| GET    | `/goals`      |
+| POST   | `/goals`      |
+| PUT    | `/goals/{id}` |
 | DELETE | `/goals/{id}` |
 
 ---
