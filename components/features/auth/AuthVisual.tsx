@@ -20,9 +20,8 @@ export function AuthVisual() {
         </h2>
         <div className="space-y-6">
           <p className="text-xl lg:text-2xl font-light leading-relaxed opacity-90">
-            Experience the conversational AI power of{" "}
-            <span className="font-bold">FinanzIA</span>. Your intelligent curator for wealth
-            and wisdom.
+            Experience the conversational AI power of <span className="font-bold">FinanzIA</span>.
+            Your intelligent curator for wealth and wisdom.
           </p>
           <div className="flex items-center space-x-4">
             <div className="flex -space-x-2">

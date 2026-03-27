@@ -33,6 +33,17 @@ BACKEND_JAVA_ENDPOINT=<replace-with-java-backend-endpoint>
 OPENAI_API_KEY=<replace-with-openai-api-key>
 ```
 
+## Before every commit
+
+Always run format and lint before committing. The pre-commit hook and CI pipeline enforce both:
+
+```bash
+npm run format   # auto-formats all files with Prettier
+npm run lint     # must exit with 0 errors
+```
+
+Fix any lint errors before staging. The pre-commit hook auto-formats and re-stages files, but lint errors will block the commit.
+
 ## Commit hooks
 
 This repository uses Husky hooks:
