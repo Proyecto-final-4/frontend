@@ -4,7 +4,8 @@
       "Bash(cd:*)",
       "Bash(npx shadcn@latest init -d)",
       "Bash(ls:*)",
-      "Bash(find /c/Users/LEIDER/Documents/frontend -type f -name *README* -o -name *DOC*)"
+      "Bash(find /c/Users/LEIDER/Documents/frontend -type f -name *README* -o -name *DOC*)",
+      "Bash(cat:*)"
     ]
   }
 }
