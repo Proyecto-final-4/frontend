@@ -171,6 +171,18 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.chat-gradient {
+  background: radial-gradient(circle at top right, #f0f9f9 0%, #f8f9fa 100%);
+}
+
 /* ─── Base layer ────────────────────────────────────────────── */
 @layer base {
   * {
