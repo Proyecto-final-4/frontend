@@ -1,11 +1,11 @@
-const BASE_URL = process.env.BACKEND_JAVA_ENDPOINT
+const BASE_URL = process.env.BACKEND_JAVA_ENDPOINT;
 
 if (!BASE_URL) {
-  throw new Error('BACKEND_JAVA_ENDPOINT is not defined')
+  throw new Error("BACKEND_JAVA_ENDPOINT is not defined");
 }
 
 interface JavaFetchOptions extends RequestInit {
-  token?: string
+  token?: string;
 }
 
 /**
@@ -15,16 +15,16 @@ interface JavaFetchOptions extends RequestInit {
  * - Si se pasa token, agrega Authorization: Bearer <token>
  */
 export async function javaFetch(path: string, options: JavaFetchOptions = {}): Promise<Response> {
-  const { token, headers, ...rest } = options
+  const { token, headers, ...rest } = options;
 
   const mergedHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(headers as Record<string, string>),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  }
+  };
 
   return fetch(`${BASE_URL}${path}`, {
     ...rest,
     headers: mergedHeaders,
-  })
+  });
 }
