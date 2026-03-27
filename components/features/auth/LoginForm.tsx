@@ -1,11 +1,40 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { User, Mail, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/use-auth";
 
 export function LoginForm() {
+  const { login } = useAuth();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await login({ email, password });
+      router.push("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className="flex-grow flex flex-col justify-center max-w-[400px] mx-auto w-full py-12">
       {/* Avatar & heading */}
@@ -20,7 +49,7 @@ export function LoginForm() {
       </div>
 
       {/* Form */}
-      <form className="space-y-5">
+      <form className="space-y-5" onSubmit={handleSubmit}>
         {/* Email */}
         <div className="space-y-2">
           <Label
@@ -36,6 +65,7 @@ export function LoginForm() {
               name="email"
               type="email"
               placeholder="name@company.com"
+              required
               className="h-12 pl-12 bg-surface-container-low border-2 border-transparent rounded-full focus-visible:border-primary focus-visible:ring-0 focus-visible:bg-white transition-all duration-200 placeholder:text-outline"
             />
           </div>
@@ -56,10 +86,14 @@ export function LoginForm() {
               name="password"
               type="password"
               placeholder="••••••••"
+              required
               className="h-12 pl-12 bg-surface-container-low border-2 border-transparent rounded-full focus-visible:border-primary focus-visible:ring-0 focus-visible:bg-white transition-all duration-200 placeholder:text-outline"
             />
           </div>
         </div>
+
+        {/* Error message */}
+        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
         {/* Remember me / Forgot password */}
         <div className="flex items-center justify-between px-1">
@@ -80,9 +114,10 @@ export function LoginForm() {
         {/* Submit */}
         <Button
           type="submit"
-          className="w-full h-12 bg-primary-container text-white font-bold rounded-full hover:brightness-110 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/10 mt-8"
+          disabled={isLoading}
+          className="w-full h-12 bg-primary-container text-white font-bold rounded-full hover:brightness-110 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/10 mt-8 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          LOGIN
+          {isLoading ? "Signing in…" : "LOGIN"}
         </Button>
       </form>
     </div>
