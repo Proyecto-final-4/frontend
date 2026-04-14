@@ -41,3 +41,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# LangGraph API
+.langgraph_api
+
+# Local Claude / MCP config
+.claude/settings.local.json
+.mcp.json

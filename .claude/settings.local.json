@@ -5,7 +5,25 @@
       "Bash(npx shadcn@latest init -d)",
       "Bash(ls:*)",
       "Bash(find /c/Users/LEIDER/Documents/frontend -type f -name *README* -o -name *DOC*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:docs.langchain.com)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const { createAgent } = require\\(''langchain''\\); console.log\\(createAgent.toString\\(\\).slice\\(0, 300\\)\\)\")",
+      "Bash(node:*)",
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebSearch",
+      "WebFetch(domain:reference.langchain.com)",
+      "WebFetch(domain:langchain-ai.lang.chat)",
+      "WebFetch(domain:changelog.langchain.com)",
+      "WebFetch(domain:langgraphjs.guide)",
+      "WebFetch(domain:www.assistant-ui.com)",
+      "Bash(npm run:*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_evaluate"
     ]
-  }
+  },
+  "enabledMcpjsonServers": ["puppeteer"]
 }
