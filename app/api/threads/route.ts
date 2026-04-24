@@ -4,6 +4,11 @@ import { COOKIE_TOKEN } from "@/shared/constants/auth";
 import { getUserIdFromCookie } from "@/lib/auth-server";
 
 const LANGGRAPH_API_URL = process.env.LANGGRAPH_API_URL ?? "http://localhost:2024";
+const LANGCHAIN_API_KEY = process.env.LANGCHAIN_API_KEY;
+
+function makeClient() {
+  return new Client({ apiUrl: LANGGRAPH_API_URL, apiKey: LANGCHAIN_API_KEY });
+}
 
 /** GET /api/threads — list threads for the authenticated user, newest first */
 export async function GET() {
@@ -14,7 +19,7 @@ export async function GET() {
   const userId = await getUserIdFromCookie();
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
-  const client = new Client({ apiUrl: LANGGRAPH_API_URL });
+  const client = makeClient();
 
   try {
     const threads = await client.threads.search({
@@ -22,14 +27,13 @@ export async function GET() {
       limit: 100,
     });
 
-    // Sort newest first by created_at
     const sorted = [...threads].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 
     return Response.json(sorted);
   } catch (err) {
-    console.error("[GET /api/threads] error:", err);
+    console.error("[GET /api/threads] url:", LANGGRAPH_API_URL, "error:", err);
     return new Response("Internal Server Error", { status: 500 });
   }
 }
@@ -46,7 +50,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { title?: string };
   const title = body.title ?? "Nueva conversación";
 
-  const client = new Client({ apiUrl: LANGGRAPH_API_URL });
+  const client = makeClient();
 
   try {
     const thread = await client.threads.create({
@@ -54,7 +58,7 @@ export async function POST(request: Request) {
     });
     return Response.json(thread);
   } catch (err) {
-    console.error("[POST /api/threads] error:", err);
+    console.error("[POST /api/threads] url:", LANGGRAPH_API_URL, "error:", err);
     return new Response("Internal Server Error", { status: 500 });
   }
 }

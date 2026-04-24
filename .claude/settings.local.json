@@ -22,8 +22,15 @@
       "Bash(npm run:*)",
       "mcp__puppeteer__puppeteer_navigate",
       "mcp__puppeteer__puppeteer_screenshot",
-      "mcp__puppeteer__puppeteer_evaluate"
+      "mcp__puppeteer__puppeteer_evaluate",
+      "Read(//c/Users/LEIDER/Documents/finanzIA-agent//**)",
+      "Read(//c/Users/LEIDER/Documents/finanzIA-agent/workflows/agents//**)",
+      "Read(//c/Users/LEIDER/Documents/finanzIA-agent/workflows/tools//**)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(git push *)"
     ]
   },
-  "enabledMcpjsonServers": ["puppeteer"]
+  "enabledMcpjsonServers": [
+    "puppeteer"
+  ]
 }
