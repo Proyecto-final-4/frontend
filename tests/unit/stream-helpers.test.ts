@@ -74,12 +74,12 @@ describe("buildSSEStream", () => {
     await buildSSEStream(
       makeStream([
         {
-          event: "tools",
+          event: "events",
           data: {
             event: "on_tool_start",
-            toolCallId: "call-1",
+            run_id: "call-1",
             name: "get_transactions",
-            input: { limit: 10 },
+            data: { input: { limit: 10 } },
           },
         },
       ]),
@@ -98,12 +98,12 @@ describe("buildSSEStream", () => {
     await buildSSEStream(
       makeStream([
         {
-          event: "tools",
+          event: "events",
           data: {
             event: "on_tool_end",
-            toolCallId: "call-1",
+            run_id: "call-1",
             name: "get_transactions",
-            output: [{ id: 1 }],
+            data: { output: [{ id: 1 }] },
           },
         },
       ]),
@@ -122,12 +122,12 @@ describe("buildSSEStream", () => {
     await buildSSEStream(
       makeStream([
         {
-          event: "tools",
+          event: "events",
           data: {
             event: "on_tool_error",
-            toolCallId: "call-1",
+            run_id: "call-1",
             name: "get_transactions",
-            error: "timeout",
+            data: { error: "timeout" },
           },
         },
       ]),
@@ -145,7 +145,10 @@ describe("buildSSEStream", () => {
     const send = vi.fn().mockResolvedValue(undefined);
     await buildSSEStream(
       makeStream([
-        { event: "tools", data: { event: "on_tool_start", name: "get_categories", input: {} } },
+        {
+          event: "events",
+          data: { event: "on_tool_start", name: "get_categories", data: { input: {} } },
+        },
       ]),
       send,
     );
@@ -161,11 +164,9 @@ describe("buildSSEStream", () => {
     await buildSSEStream(
       makeStream([
         {
-          event: "tasks",
+          event: "updates",
           data: {
-            id: "task-1",
-            name: "agent",
-            interrupts: [
+            __interrupt__: [
               { id: "irq-1", value: "¿Confirmas el registro?" },
               { id: "irq-2", value: { type: "confirm", message: "Proceed?" } },
             ],
@@ -188,16 +189,13 @@ describe("buildSSEStream", () => {
 
   it("does not emit interrupt when interrupts array is empty", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
-    await buildSSEStream(
-      makeStream([{ event: "tasks", data: { id: "t1", name: "agent", interrupts: [] } }]),
-      send,
-    );
+    await buildSSEStream(makeStream([{ event: "updates", data: { __interrupt__: [] } }]), send);
     expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: "interrupt" }));
   });
 
   it("does not emit interrupt when interrupts field is absent", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
-    await buildSSEStream(makeStream([{ event: "tasks", data: { id: "t1", name: "agent" } }]), send);
+    await buildSSEStream(makeStream([{ event: "updates", data: {} }]), send);
     expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: "interrupt" }));
   });
 
@@ -241,12 +239,22 @@ describe("buildSSEStream", () => {
       makeStream([
         { event: "messages/partial", data: [{ type: "ai", content: "Fetching..." }] },
         {
-          event: "tools",
-          data: { event: "on_tool_start", toolCallId: "c1", name: "get_transactions", input: {} },
+          event: "events",
+          data: {
+            event: "on_tool_start",
+            run_id: "c1",
+            name: "get_transactions",
+            data: { input: {} },
+          },
         },
         {
-          event: "tools",
-          data: { event: "on_tool_end", toolCallId: "c1", name: "get_transactions", output: [] },
+          event: "events",
+          data: {
+            event: "on_tool_end",
+            run_id: "c1",
+            name: "get_transactions",
+            data: { output: [] },
+          },
         },
         { event: "messages/partial", data: [{ type: "ai", content: "Done." }] },
       ]),
