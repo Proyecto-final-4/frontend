@@ -284,6 +284,7 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
         });
       } finally {
         setIsStreaming(false);
+        setStreamingParts(null);
       }
     },
     [isStreaming, threadId, consumeStream],
@@ -332,6 +333,7 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
         });
       } finally {
         setIsStreaming(false);
+        setStreamingParts(null);
       }
     },
     [isStreaming, threadId, consumeStream],

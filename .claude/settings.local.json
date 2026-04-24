@@ -27,7 +27,10 @@
       "Read(//c/Users/LEIDER/Documents/finanzIA-agent/workflows/agents//**)",
       "Read(//c/Users/LEIDER/Documents/finanzIA-agent/workflows/tools//**)",
       "WebFetch(domain:api.github.com)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "mcp__puppeteer__puppeteer_fill",
+      "mcp__puppeteer__puppeteer_click",
+      "Bash(./mvnw compile *)"
     ]
   },
   "enabledMcpjsonServers": [
