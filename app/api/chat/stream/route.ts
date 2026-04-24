@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         config: {
           configurable: { token, userName },
         },
-        streamMode: ["messages", "tools", "tasks"],
+        streamMode: ["messages", "events", "updates"],
       });
 
       await buildSSEStream(runStream, send);

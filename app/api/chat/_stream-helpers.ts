@@ -57,38 +57,48 @@ export async function buildSSEStream(
       }
     }
 
-    // ── Tool lifecycle events ─────────────────────────────────────────────────
-    if (chunk.event === "tools") {
+    // ── Tool lifecycle events (via "events" stream mode) ─────────────────────
+    if (chunk.event === "events") {
       const d = chunk.data as {
         event: string;
-        toolCallId?: string;
-        name: string;
-        input?: unknown;
-        output?: unknown;
-        error?: unknown;
+        name?: string;
+        run_id?: string;
+        data?: { input?: unknown; output?: unknown; error?: unknown };
       };
 
-      const id = d.toolCallId ?? d.name;
+      const id = d.run_id ?? d.name ?? "unknown";
 
       if (d.event === "on_tool_start") {
-        await send({ type: "tool_start", toolCallId: id, name: d.name, input: d.input });
+        await send({
+          type: "tool_start",
+          toolCallId: id,
+          name: d.name ?? "",
+          input: d.data?.input,
+        });
       } else if (d.event === "on_tool_end") {
-        await send({ type: "tool_end", toolCallId: id, name: d.name, result: d.output });
+        await send({
+          type: "tool_end",
+          toolCallId: id,
+          name: d.name ?? "",
+          result: d.data?.output,
+        });
       } else if (d.event === "on_tool_error") {
-        await send({ type: "tool_error", toolCallId: id, name: d.name, error: d.error });
+        await send({
+          type: "tool_error",
+          toolCallId: id,
+          name: d.name ?? "",
+          error: d.data?.error,
+        });
       }
     }
 
-    // ── Task interrupts (HITL) ────────────────────────────────────────────────
-    if (chunk.event === "tasks") {
-      const d = chunk.data as {
-        id: string;
-        name: string;
-        interrupts?: Interrupt[];
-      };
+    // ── Task interrupts via "updates" stream mode ─────────────────────────────
+    if (chunk.event === "updates") {
+      const d = chunk.data as Record<string, unknown>;
+      const interrupts = d.__interrupt__ as Interrupt[] | undefined;
 
-      if (d.interrupts && d.interrupts.length > 0) {
-        for (const interrupt of d.interrupts) {
+      if (interrupts && interrupts.length > 0) {
+        for (const interrupt of interrupts) {
           await send({
             type: "interrupt",
             interruptId: interrupt.id ?? undefined,
