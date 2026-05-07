@@ -8,6 +8,8 @@ const TOOL_LABELS: Record<string, string> = {
   delete_transaction: "Eliminando transacción",
   get_transactions: "Obteniendo transacciones",
   get_transaction_detail: "Consultando detalle de transacción",
+  get_summary: "Analizando finanzas",
+  rag_search: "Buscando transacciones",
   get_categories: "Obteniendo categorías",
   create_category: "Creando categoría",
   update_category: "Actualizando categoría",
