@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { emptyAssistantParts, applyToken, applyToolUpdate } from "@/lib/chat-reducers";
-import type { AssistantPart } from "@/types/chat";
+import type { AssistantPart, TextPart } from "@/types/chat";
 
 describe("emptyAssistantParts", () => {
   it("returns a single empty text part", () => {
@@ -32,7 +32,7 @@ describe("applyToken", () => {
   it("does not mutate the original array", () => {
     const parts = emptyAssistantParts();
     applyToken(parts, "new content");
-    expect(parts[0].content).toBe("");
+    expect((parts[0] as TextPart).content).toBe("");
   });
 
   it("updates the LAST text part when multiple text parts exist", () => {
