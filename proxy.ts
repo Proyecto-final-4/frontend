@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { AUTH_ROUTES, PROTECTED_ROUTES } from "@/shared/constants/auth";
 import { getTokenFromRequest } from "@/shared/utils/cookies";
 
-/** Devuelve true si la ruta es de autenticación (login / register). */
+/** Returns true if the route is an auth route (login / register). */
 function isAuthRoute(pathname: string): boolean {
   return AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**
- * Devuelve true si la ruta requiere autenticación.
- * "/" se evalúa de forma exacta para no atrapar todas las rutas.
+ * Returns true if the route requires authentication.
+ * "/" is matched exactly to avoid catching all routes.
  */
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) =>
@@ -21,13 +21,13 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = getTokenFromRequest(request);
 
-  // Usuario autenticado en login/register → redirigir al dashboard
+  // Authenticated user on login/register → redirect to dashboard
   if (isAuthRoute(pathname) && token) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Usuario sin token en ruta protegida → redirigir al login
-  // Se conserva la ruta de origen en ?from= para redirigir de vuelta tras el login
+  // Unauthenticated user on protected route → redirect to login
+  // Preserve the original path in ?from= to redirect back after login
   if (isProtectedRoute(pathname) && !token) {
     const loginUrl = new URL("/login", request.url);
     if (pathname !== "/") {

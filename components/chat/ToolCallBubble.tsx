@@ -4,6 +4,8 @@ import type { ToolCallPart } from "@/types/chat";
 // Human-readable labels for each tool
 const TOOL_LABELS: Record<string, string> = {
   create_transaction: "Creando transacción",
+  update_transaction: "Actualizando transacción",
+  delete_transaction: "Eliminando transacción",
   get_transactions: "Obteniendo transacciones",
   get_transaction_detail: "Consultando detalle de transacción",
   get_categories: "Obteniendo categorías",

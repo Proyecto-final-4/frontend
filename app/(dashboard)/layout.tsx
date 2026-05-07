@@ -4,12 +4,12 @@ import { COOKIE_USER_INFO } from "@/shared/constants/auth";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 /**
- * Layout de las rutas protegidas del dashboard (/transactions, /budgets, etc.).
+ * Layout for protected dashboard routes (/transactions, /budgets, etc.).
  *
- * Capas de protección:
- *   1. Middleware  → redirige antes de renderizar (sin token en cookie httpOnly)
- *   2. Este layout → redirige en el servidor si falta user_info (cookie de sesión)
- *   3. AuthGuard   → redirige en el cliente si la sesión expira con la pestaña abierta
+ * Protection layers:
+ *   1. Middleware  → redirects before rendering (no token in httpOnly cookie)
+ *   2. This layout → redirects on the server if user_info cookie is missing
+ *   3. AuthGuard   → redirects on the client if the session expires with the tab open
  */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();

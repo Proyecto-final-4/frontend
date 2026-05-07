@@ -2,8 +2,8 @@ import { javaFetch } from "@/sdk/_http";
 import type { AuthResponse, LoginPayload, RegisterPayload } from "@/types/auth";
 
 /**
- * Llama a POST /auth/login en la API Java.
- * Solo usar desde API routes del BFF (server-side).
+ * Calls POST /auth/login on the Java API.
+ * Only use from BFF API routes (server-side).
  */
 export async function javaLogin(payload: LoginPayload): Promise<AuthResponse> {
   const res = await javaFetch("/auth/login", {
@@ -20,8 +20,8 @@ export async function javaLogin(payload: LoginPayload): Promise<AuthResponse> {
 }
 
 /**
- * Llama a POST /auth/register en la API Java.
- * Solo usar desde API routes del BFF (server-side).
+ * Calls POST /auth/register on the Java API.
+ * Only use from BFF API routes (server-side).
  */
 export async function javaRegister(payload: RegisterPayload): Promise<AuthResponse> {
   const res = await javaFetch("/auth/register", {

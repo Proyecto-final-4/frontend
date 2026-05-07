@@ -1,12 +1,12 @@
 export const COOKIE_TOKEN = "auth_token";
 export const COOKIE_USER_INFO = "user_info";
 
-// 7 días
+// 7 days
 export const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
-// Rutas públicas de autenticación (login / registro)
+// Public auth routes (login / register)
 export const AUTH_ROUTES = ["/login", "/register"];
 
-// Rutas que requieren un token válido.
-// "/" se compara de forma exacta; el resto se trata como prefijo.
+// Routes that require a valid token.
+// "/" is matched exactly; all others are matched by prefix.
 export const PROTECTED_ROUTES = ["/", "/transactions", "/budgets", "/goals", "/ai", "/categories"];
