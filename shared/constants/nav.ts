@@ -1,4 +1,4 @@
-import { LayoutGrid, Receipt, Wallet, Flag, type LucideIcon } from "lucide-react";
+﻿import { LayoutGrid, Receipt, Wallet, Flag, type LucideIcon } from "lucide-react";
 
 export interface NavLink {
   href: string;

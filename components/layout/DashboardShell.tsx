@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { cookies } from "next/headers";
 import { PlusCircle, User } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
@@ -26,7 +26,9 @@ export async function DashboardShell({
   if (userInfoRaw) {
     try {
       userName = (JSON.parse(decodeURIComponent(userInfoRaw)) as UserInfo).name;
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
 
   return (
@@ -34,9 +36,7 @@ export async function DashboardShell({
       <aside className="w-64 flex-shrink-0 flex flex-col h-screen sticky top-0 left-0 bg-surface-container-low border-r border-outline-variant/20">
         <div className="flex flex-col h-full px-4 py-6">
           <div className="px-3 mb-8">
-            <p className="text-xl font-bold tracking-tight text-on-surface font-headline">
-              FinanzIA
-            </p>
+            <p className="text-xl font-bold tracking-tight text-on-surface font-headline">FinanzIA</p>
             <p className="text-[10px] text-secondary font-bold uppercase tracking-widest opacity-60 mt-0.5">
               Intelligent Curator
             </p>
@@ -46,7 +46,7 @@ export async function DashboardShell({
             className="flex items-center justify-center gap-2 w-full bg-primary text-on-primary px-4 py-3 rounded-full text-sm font-semibold transition-all hover:opacity-90 active:scale-95 mb-6"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Nueva conversacion</span>
+            <span>Nueva conversaciÃ³n</span>
           </Link>
           <nav className="space-y-1 flex-grow">
             {NAV_LINKS.map(({ href, label, icon: Icon }) => (
@@ -84,9 +84,7 @@ export async function DashboardShell({
       <main className="flex-grow flex flex-col overflow-hidden">
         <header className="w-full h-16 sticky top-0 z-40 bg-white/50 backdrop-blur-xl flex items-center px-8 border-b border-outline-variant/20">
           <div>
-            <p className="text-base font-bold text-on-surface font-headline leading-tight">
-              {title}
-            </p>
+            <p className="text-base font-bold text-on-surface font-headline leading-tight">{title}</p>
             {subtitle ? (
               <p className="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mt-0.5">
                 {subtitle}
