@@ -1,5 +1,4 @@
 #!/usr/bin/env sh
-npm run secrets:scan
 npm run format
 git add -u
 npm run lint

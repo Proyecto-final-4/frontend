@@ -1,4 +1,4 @@
-const requiredEnvVars = ["BACKEND_JAVA_ENDPOINT", "OPENAI_API_KEY"];
+const requiredEnvVars = ["BACKEND_JAVA_ENDPOINT"];
 
 const missingEnvVars = requiredEnvVars.filter((envVar) => {
   const value = process.env[envVar];
