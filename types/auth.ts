@@ -1,12 +1,12 @@
 export interface AuthResponse {
   token: string;
-  id: number;
+  id: string;
   name: string;
   email: string;
 }
 
 export interface UserInfo {
-  id: number;
+  id: string;
   name: string;
   email: string;
 }

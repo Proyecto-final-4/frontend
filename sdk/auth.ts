@@ -1,6 +1,16 @@
 import { javaFetch } from "@/sdk/_http";
 import type { AuthResponse, LoginPayload, RegisterPayload } from "@/types/auth";
 
+function throwJavaApiError(text: string, fallback: string): never {
+  try {
+    const body = JSON.parse(text) as { error?: string };
+    throw new Error(body.error ?? text);
+  } catch (e) {
+    if (e instanceof Error && e.message !== text) throw e;
+    throw new Error(text || fallback);
+  }
+}
+
 /**
  * Calls POST /auth/login on the Java API.
  * Only use from BFF API routes (server-side).
@@ -12,8 +22,7 @@ export async function javaLogin(payload: LoginPayload): Promise<AuthResponse> {
   });
 
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error || "Error al iniciar sesión");
+    throwJavaApiError(await res.text(), "Error al iniciar sesión");
   }
 
   return res.json() as Promise<AuthResponse>;
@@ -30,8 +39,7 @@ export async function javaRegister(payload: RegisterPayload): Promise<AuthRespon
   });
 
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error || "Error al registrar usuario");
+    throwJavaApiError(await res.text(), "Error al registrar usuario");
   }
 
   return res.json() as Promise<AuthResponse>;
