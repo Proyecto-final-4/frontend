@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 import {
   PlusCircle,
   LayoutGrid,
@@ -8,12 +9,13 @@ import {
   Flag,
   User,
   Sparkles,
-  BarChart2,
 } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { ThreadList } from "@/components/chat/ThreadList";
+import { DashboardWidgets } from "@/components/features/dashboard/DashboardWidgets";
+import { WidgetsSkeleton } from "@/components/features/dashboard/WidgetsSkeleton";
 import { COOKIE_USER_INFO } from "@/shared/constants/auth";
 import type { UserInfo } from "@/types/auth";
 
@@ -47,10 +49,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   return (
     <AuthGuard>
       <div className="flex h-screen overflow-hidden text-on-surface bg-background">
-        {/* ── Sidebar ──────────────────────────────────────────── */}
         <aside className="w-64 flex-shrink-0 flex flex-col h-screen sticky top-0 left-0 bg-surface-container-low border-r border-outline-variant/20">
           <div className="flex flex-col h-full px-4 py-6">
-            {/* Brand */}
             <div className="px-3 mb-8">
               <p className="text-xl font-bold tracking-tight text-on-surface font-headline">
                 FinanzIA
@@ -60,7 +60,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </p>
             </div>
 
-            {/* New Chat CTA */}
             <Link
               href="/"
               className="flex items-center justify-center gap-2 w-full bg-primary text-on-primary px-4 py-3 rounded-full text-sm font-semibold transition-all hover:opacity-90 active:scale-95 mb-6"
@@ -69,7 +68,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               <span>Nueva conversación</span>
             </Link>
 
-            {/* Nav Links */}
             <nav className="space-y-1">
               {NAV_LINKS.map(({ href, label, icon: Icon, active }) => (
                 <Link
@@ -87,10 +85,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               ))}
             </nav>
 
-            {/* Thread list — fills remaining space */}
             <ThreadList activeThreadId={initialThreadId} />
 
-            {/* User Profile */}
             <div className="pt-4 flex items-center gap-3 px-2 border-t border-outline-variant/20">
               <div className="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
                 <User className="w-4 h-4 text-on-secondary-container" />
@@ -108,9 +104,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </div>
         </aside>
 
-        {/* ── Main Content ─────────────────────────────────────── */}
         <main className="flex-grow flex flex-col relative overflow-hidden chat-gradient">
-          {/* Top Bar */}
           <header className="w-full h-16 sticky top-0 z-40 bg-white/50 backdrop-blur-xl flex items-center justify-between px-8 border-b border-white/60">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-primary/8 flex items-center justify-center">
@@ -125,18 +119,35 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 </p>
               </div>
             </div>
-            <button className="flex items-center gap-2 bg-surface-container-low border border-outline-variant/40 text-on-surface px-4 py-2 rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors">
-              <BarChart2 className="w-4 h-4" />
-              Ver reportes
-            </button>
           </header>
 
-          {/* Chat — key forces remount on thread switch so state resets cleanly */}
-          <ChatInterface
-            key={initialThreadId ?? "new"}
-            userName={userName}
-            initialThreadId={initialThreadId}
-          />
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+            <div className="max-h-52 flex-shrink-0 overflow-y-auto border-b border-outline-variant/20 bg-white/50 p-4 lg:hidden">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                Resumen del mes
+              </p>
+              <Suspense fallback={<WidgetsSkeleton />}>
+                <DashboardWidgets />
+              </Suspense>
+            </div>
+
+            <aside className="hidden w-80 flex-shrink-0 overflow-y-auto border-r border-outline-variant/20 bg-white/40 p-5 lg:block">
+              <p className="mb-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                Resumen del mes
+              </p>
+              <Suspense fallback={<WidgetsSkeleton />}>
+                <DashboardWidgets />
+              </Suspense>
+            </aside>
+
+            <div className="min-w-0 flex-1">
+              <ChatInterface
+                key={initialThreadId ?? "new"}
+                userName={userName}
+                initialThreadId={initialThreadId}
+              />
+            </div>
+          </div>
         </main>
       </div>
     </AuthGuard>

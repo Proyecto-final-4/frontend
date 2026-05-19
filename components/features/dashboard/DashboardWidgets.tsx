@@ -1,0 +1,1 @@
+import { getAuthToken } from "@/lib/auth-server"; import { loadDashboardWidgetsData } from "@/lib/dashboard-widgets"; import { DashboardWidgetsPanel } from "@/components/features/dashboard/DashboardWidgetsPanel"; export async function DashboardWidgets() {   const token = await getAuthToken();   return <DashboardWidgetsPanel data={await loadDashboardWidgetsData(token)} />; }
