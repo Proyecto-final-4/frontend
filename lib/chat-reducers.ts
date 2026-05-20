@@ -9,14 +9,21 @@ export function emptyAssistantParts(): AssistantPart[] {
  * Applies a cumulative text token to the parts array.
  * Finds the last text part and replaces its content.
  * If no text part exists, prepends a new one.
+ *
+ * O(1) best-case: reverse scan with early exit.
+ * Avoids three intermediate arrays from the previous pattern (spread + map + filter).
+ * In practice the text part sits at index 0 and tool_call parts accumulate
+ * at the end, so the search walks at most N-1 tool_call parts.
  */
 export function applyToken(parts: AssistantPart[], content: string): AssistantPart[] {
-  const lastTextIdx = [...parts].map((p, i) => (p.kind === "text" ? i : -1)).filter((i) => i >= 0);
-  if (lastTextIdx.length === 0) return [{ kind: "text", content }, ...parts];
-  const idx = lastTextIdx[lastTextIdx.length - 1];
-  const next = [...parts];
-  next[idx] = { kind: "text", content };
-  return next;
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (parts[i].kind === "text") {
+      const next = [...parts];
+      next[i] = { kind: "text", content };
+      return next;
+    }
+  }
+  return [{ kind: "text", content }, ...parts];
 }
 
 /**

@@ -79,7 +79,8 @@ export function useSpeechRecognition(
   options: UseSpeechRecognitionOptions = {},
 ): UseSpeechRecognitionReturn {
   const { lang = "es-ES", onTranscript } = options;
-  const [isSupported] = useState(() => getSpeechRecognitionCtor() !== null);
+  // false on SSR and first client paint to avoid hydration mismatch
+  const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -87,6 +88,10 @@ export function useSpeechRecognition(
   const startingRef = useRef(false);
   const modeRef = useRef<"local" | "cloud">("cloud");
   const runStartRef = useRef<(strategy: StartStrategy) => Promise<void>>(async () => undefined);
+
+  useEffect(() => {
+    setIsSupported(getSpeechRecognitionCtor() !== null);
+  }, []);
 
   useEffect(() => {
     onTranscriptRef.current = onTranscript;

@@ -34,7 +34,7 @@ describe("useSpeechRecognition", () => {
     expect(result.current.isSupported).toBe(false);
   });
 
-  it("reports isSupported=true when SpeechRecognition exists", () => {
+  it("reports isSupported=true when SpeechRecognition exists", async () => {
     class MockRecognition {
       lang = "";
       continuous = false;
@@ -54,7 +54,9 @@ describe("useSpeechRecognition", () => {
     vi.stubGlobal("SpeechRecognition", MockRecognition);
 
     const { result } = renderHook(() => useSpeechRecognition());
-    expect(result.current.isSupported).toBe(true);
+    await waitFor(() => {
+      expect(result.current.isSupported).toBe(true);
+    });
   });
 
   it("calls onTranscript with final text", async () => {
