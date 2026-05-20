@@ -7,15 +7,27 @@ import { TransactionRow } from "@/components/features/transactions/TransactionRo
 import { getCategories } from "@/sdk/categories";
 import { getTransactions } from "@/sdk/transactions";
 import { getServerToken } from "@/shared/utils/auth-server";
-import type { TransactionType } from "@/types/transaction";
+import type { Category } from "@/types/category";
+import type { PageResponse, Transaction, TransactionType } from "@/types/transaction";
+
 function parseTransactionType(value?: string): TransactionType | undefined {
   return value === "INCOME" || value === "EXPENSE" ? value : undefined;
 }
+
 function buildQueryString(params: Record<string, string | undefined>): string {
   const s = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) if (v) s.set(k, v);
   return s.toString();
 }
+
+const emptyPage: PageResponse<Transaction> = {
+  content: [],
+  totalElements: 0,
+  totalPages: 0,
+  number: 0,
+  size: 20,
+};
+
 export default async function TransactionsPage({
   searchParams,
 }: {
@@ -28,7 +40,6 @@ export default async function TransactionsPage({
     size?: string;
   }>;
 }) {
-  const token = await getServerToken();
   const sp = await searchParams;
   const page = Math.max(0, Number(sp.page ?? "0") || 0);
   const size = Math.min(50, Math.max(1, Number(sp.size ?? "20") || 20));
@@ -38,11 +49,25 @@ export default async function TransactionsPage({
   const categoryId = sp.categoryId?.trim() || undefined;
   const listParams = { from, to, type, categoryId, page, size };
   const queryForPagination = buildQueryString({ from, to, type, categoryId, size: String(size) });
-  const [categories, transactionsPage] = await Promise.all([
-    getCategories(token),
-    getTransactions(token, listParams),
-  ]);
+
+  let categories: Category[] = [];
+  let transactionsPage = emptyPage;
+  let loadError: string | null = null;
+
+  try {
+    const token = await getServerToken();
+    const [loadedCategories, loadedTransactions] = await Promise.all([
+      getCategories(token),
+      getTransactions(token, listParams),
+    ]);
+    categories = loadedCategories;
+    transactionsPage = loadedTransactions;
+  } catch (err) {
+    loadError = err instanceof Error ? err.message : "No se pudieron cargar las transacciones";
+  }
+
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+
   return (
     <DashboardShell
       activeHref="/transactions"
@@ -50,6 +75,11 @@ export default async function TransactionsPage({
       subtitle="Historial financiero"
     >
       <section className="max-w-5xl mx-auto space-y-8">
+        {loadError ? (
+          <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {loadError}
+          </p>
+        ) : null}
         <Suspense fallback={null}>
           <TransactionFilters categories={categories} initial={{ from, to, type, categoryId }} />
         </Suspense>
@@ -68,7 +98,7 @@ export default async function TransactionsPage({
                   <TransactionRow
                     transaction={tx}
                     categoryName={
-                      tx.categoryName ?? categoryMap.get(tx.categoryId) ?? "Sin categoria"
+                      tx.categoryName ?? categoryMap.get(tx.categoryId) ?? "Sin categoría"
                     }
                   />
                 </li>

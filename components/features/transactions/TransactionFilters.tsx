@@ -3,16 +3,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { CollapsibleFormPanel } from "@/components/ui/collapsible-form-panel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { formSelectClassName } from "@/lib/form-styles";
 import type { Category } from "@/types/category";
 import type { TransactionType } from "@/types/transaction";
-
-const selectClassName = cn(
-  "flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-xs",
-  "outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-);
 
 interface TransactionFiltersProps {
   categories: Category[];
@@ -62,8 +58,7 @@ export function TransactionFilters({ categories, initial }: TransactionFiltersPr
   }
 
   return (
-    <section className="rounded-2xl border border-outline-variant/30 bg-card p-5 shadow-sm">
-      <h2 className="text-base font-bold text-on-surface font-headline mb-4">Filtros</h2>
+    <CollapsibleFormPanel title="Filtros">
       <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-2">
           <Label htmlFor="from">Desde</Label>
@@ -78,7 +73,7 @@ export function TransactionFilters({ categories, initial }: TransactionFiltersPr
           <select
             id="type"
             name="type"
-            className={selectClassName}
+            className={formSelectClassName}
             defaultValue={initial.type ?? ""}
           >
             <option value="">Todos</option>
@@ -91,7 +86,7 @@ export function TransactionFilters({ categories, initial }: TransactionFiltersPr
           <select
             id="categoryId"
             name="categoryId"
-            className={selectClassName}
+            className={formSelectClassName}
             defaultValue={initial.categoryId ?? ""}
           >
             <option value="">Todas</option>
@@ -102,7 +97,7 @@ export function TransactionFilters({ categories, initial }: TransactionFiltersPr
             ))}
           </select>
         </div>
-        <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
           <Button type="submit" disabled={isPending}>
             {isPending ? "Aplicando…" : "Aplicar filtros"}
           </Button>
@@ -111,6 +106,6 @@ export function TransactionFilters({ categories, initial }: TransactionFiltersPr
           </Button>
         </div>
       </form>
-    </section>
+    </CollapsibleFormPanel>
   );
 }
