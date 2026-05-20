@@ -14,7 +14,7 @@ async function parseGoalsError(res: Response, fallback: string): Promise<never> 
 
 export async function fetchGoals(token: string): Promise<SavingsGoal[]> {
   const res = await javaFetch("/goals", { method: "GET", token });
-  if (!res.ok) await parseGoalsError(res, "No se pudieron cargar las metas");
+  if (!res.ok) await parseGoalsError(res, "Failed to load goals");
   return res.json() as Promise<SavingsGoal[]>;
 }
 
@@ -24,7 +24,7 @@ export async function createGoal(token: string, payload: CreateGoalPayload): Pro
     token,
     body: JSON.stringify(payload),
   });
-  if (!res.ok) await parseGoalsError(res, "No se pudo crear la meta");
+  if (!res.ok) await parseGoalsError(res, "Failed to create goal");
   return res.json() as Promise<SavingsGoal>;
 }
 
@@ -38,11 +38,11 @@ export async function updateGoal(
     token,
     body: JSON.stringify(payload),
   });
-  if (!res.ok) await parseGoalsError(res, "No se pudo actualizar la meta");
+  if (!res.ok) await parseGoalsError(res, "Failed to update goal");
   return res.json() as Promise<SavingsGoal>;
 }
 
 export async function deleteGoal(token: string, id: string): Promise<void> {
   const res = await javaFetch(`/goals/${id}`, { method: "DELETE", token });
-  if (!res.ok) await parseGoalsError(res, "No se pudo eliminar la meta");
+  if (!res.ok) await parseGoalsError(res, "Failed to delete goal");
 }

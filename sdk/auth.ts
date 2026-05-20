@@ -1,9 +1,5 @@
 import { javaFetch } from "@/sdk/_http";
-import type {
-  AuthResponse,
-  EncryptedLoginPayload,
-  EncryptedRegisterPayload,
-} from "@/types/auth";
+import type { AuthResponse, EncryptedLoginPayload, EncryptedRegisterPayload } from "@/types/auth";
 
 function throwJavaApiError(text: string, fallback: string): never {
   try {
@@ -26,7 +22,7 @@ export async function javaLogin(payload: EncryptedLoginPayload): Promise<AuthRes
   });
 
   if (!res.ok) {
-    throwJavaApiError(await res.text(), "Error al iniciar sesión");
+    throwJavaApiError(await res.text(), "Failed to sign in");
   }
 
   return res.json() as Promise<AuthResponse>;
@@ -43,7 +39,7 @@ export async function javaRegister(payload: EncryptedRegisterPayload): Promise<A
   });
 
   if (!res.ok) {
-    throwJavaApiError(await res.text(), "Error al registrar usuario");
+    throwJavaApiError(await res.text(), "Failed to register user");
   }
 
   return res.json() as Promise<AuthResponse>;

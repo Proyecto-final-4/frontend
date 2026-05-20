@@ -8,7 +8,7 @@ export async function getSummary(
   to: string,
 ): Promise<SummaryResponse> {
   const res = await javaFetch(`/summary?${new URLSearchParams({ from, to })}`, { token });
-  if (!res.ok) await throwJavaApiErrorFromResponse(res, "Error al cargar el resumen financiero");
+  if (!res.ok) await throwJavaApiErrorFromResponse(res, "Failed to load financial summary");
   return res.json() as Promise<SummaryResponse>;
 }
 
@@ -22,6 +22,6 @@ export async function getSummaryTrends(
   },
 ): Promise<SummaryTrendsResponse> {
   const res = await javaFetch(`/summary/trends?${new URLSearchParams(params)}`, { token });
-  if (!res.ok) await throwJavaApiErrorFromResponse(res, "Error al cargar tendencias financieras");
+  if (!res.ok) await throwJavaApiErrorFromResponse(res, "Failed to load financial trends");
   return res.json() as Promise<SummaryTrendsResponse>;
 }

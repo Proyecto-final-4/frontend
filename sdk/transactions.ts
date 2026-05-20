@@ -26,7 +26,7 @@ export async function getTransactions(
   const res = await javaFetch(`/transactions${buildQuery(params)}`, { token });
 
   if (!res.ok) {
-    await throwJavaApiErrorFromResponse(res, "Error al cargar transacciones");
+    await throwJavaApiErrorFromResponse(res, "Failed to load transactions");
   }
 
   return res.json() as Promise<PageResponse<Transaction>>;
@@ -43,7 +43,7 @@ export async function createTransaction(
   });
 
   if (!res.ok) {
-    await throwJavaApiErrorFromResponse(res, "Error al crear la transacción");
+    await throwJavaApiErrorFromResponse(res, "Failed to create transaction");
   }
 
   return res.json() as Promise<Transaction>;

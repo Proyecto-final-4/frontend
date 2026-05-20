@@ -9,10 +9,10 @@ interface JavaFetchOptions extends RequestInit {
 }
 
 /**
- * Función base para todas las llamadas a la API Java (server-side).
- * - Prefija BACKEND_JAVA_ENDPOINT
- * - Agrega Content-Type: application/json
- * - Si se pasa token, agrega Authorization: Bearer <token>
+ * Base helper for all Java API calls (server-side).
+ * - Prefixes BACKEND_JAVA_ENDPOINT
+ * - Sets Content-Type: application/json
+ * - Adds Authorization: Bearer <token> when a token is provided
  */
 export async function javaFetch(path: string, options: JavaFetchOptions = {}): Promise<Response> {
   const { token, headers, ...rest } = options;

@@ -12,10 +12,10 @@ function messageFromBody(text: string, fallback: string): string {
 
 function fallbackForStatus(status: number, fallback: string): string {
   if (status === 401 || status === 403) {
-    return "Sesión expirada o no válida. Cierra sesión e inicia sesión de nuevo.";
+    return "Session expired or invalid. Sign out and sign in again.";
   }
   if (status === 404) {
-    return "Recurso no encontrado en el servidor.";
+    return "Resource not found on the server.";
   }
   return fallback;
 }
