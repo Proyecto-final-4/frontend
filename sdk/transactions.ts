@@ -1,5 +1,5 @@
 import { javaFetch } from "@/sdk/_http";
-import { throwJavaApiError } from "@/sdk/_errors";
+import { throwJavaApiErrorFromResponse } from "@/sdk/_errors";
 import type {
   CreateTransactionPayload,
   PageResponse,
@@ -26,7 +26,7 @@ export async function getTransactions(
   const res = await javaFetch(`/transactions${buildQuery(params)}`, { token });
 
   if (!res.ok) {
-    throwJavaApiError(await res.text(), "Error al cargar transacciones");
+    await throwJavaApiErrorFromResponse(res, "Error al cargar transacciones");
   }
 
   return res.json() as Promise<PageResponse<Transaction>>;
@@ -43,7 +43,7 @@ export async function createTransaction(
   });
 
   if (!res.ok) {
-    throwJavaApiError(await res.text(), "Error al crear la transacción");
+    await throwJavaApiErrorFromResponse(res, "Error al crear la transacción");
   }
 
   return res.json() as Promise<Transaction>;
