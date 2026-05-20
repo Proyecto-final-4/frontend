@@ -1,9 +1,19 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createTransaction } from "@/sdk/transactions";
 import { getServerToken } from "@/shared/utils/auth-server";
-import type { CreateTransactionPayload, TransactionType } from "@/types/transaction";
+import type { CreateTransactionPayload } from "@/types/transaction";
+
+const createTransactionSchema = z.object({
+  categoryId: z.string().min(1, "La categoría es requerida"),
+  amount: z.coerce.number().positive("El monto debe ser mayor a cero"),
+  type: z.enum(["INCOME", "EXPENSE"], { error: "Selecciona un tipo válido" }),
+  transactionDate: z.string().min(1, "La fecha es requerida"),
+  description: z.string().min(1, "La descripción es requerida").trim(),
+  notes: z.string().trim().optional(),
+});
 
 export type CreateTransactionState = { error?: string; success?: boolean } | null;
 
@@ -12,24 +22,23 @@ export async function createTransactionAction(
   formData: FormData,
 ): Promise<CreateTransactionState> {
   try {
-    const token = await getServerToken();
-    const categoryId = String(formData.get("categoryId") ?? "");
-    const amount = Number(formData.get("amount"));
-    const type = String(formData.get("type") ?? "") as TransactionType;
-    const transactionDate = String(formData.get("transactionDate") ?? "");
-    const description = String(formData.get("description") ?? "").trim();
-    const notesRaw = formData.get("notes");
-    const notes = notesRaw ? String(notesRaw).trim() : undefined;
+    const raw = {
+      categoryId: formData.get("categoryId"),
+      amount: formData.get("amount"),
+      type: formData.get("type"),
+      transactionDate: formData.get("transactionDate"),
+      description: formData.get("description"),
+      notes: formData.get("notes") ?? undefined,
+    };
 
-    if (!categoryId || !transactionDate || !description) {
-      return { error: "Completa categoría, fecha y descripción." };
+    const result = createTransactionSchema.safeParse(raw);
+    if (!result.success) {
+      const first = result.error.issues[0];
+      return { error: first?.message ?? "Datos inválidos." };
     }
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return { error: "El monto debe ser mayor a cero." };
-    }
-    if (type !== "INCOME" && type !== "EXPENSE") {
-      return { error: "Selecciona un tipo válido." };
-    }
+
+    const { categoryId, amount, type, transactionDate, description, notes } = result.data;
+    const token = await getServerToken();
 
     const payload: CreateTransactionPayload = {
       categoryId,

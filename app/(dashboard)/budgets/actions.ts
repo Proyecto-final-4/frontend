@@ -1,29 +1,40 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createBudget, deleteBudget, updateBudget } from "@/sdk/budgets";
 import { getServerToken } from "@/shared/utils/auth-server";
-import type { BudgetPeriod, CreateBudgetPayload } from "@/types/budget";
+import type { CreateBudgetPayload } from "@/types/budget";
+
+const createBudgetSchema = z.object({
+  categoryId: z.string().min(1, "La categoría es requerida"),
+  amountLimit: z.coerce.number().positive("El monto límite debe ser mayor a cero"),
+  period: z.enum(["DAILY", "WEEKLY", "MONTHLY"], { error: "Selecciona un período válido" }),
+  startDate: z.string().min(1, "La fecha de inicio es requerida"),
+  endDate: z.string().optional(),
+});
 
 export async function createBudgetAction(
   _prev: { error?: string } | null,
   formData: FormData,
 ): Promise<{ error?: string } | null> {
   try {
-    const token = await getServerToken();
-    const categoryId = String(formData.get("categoryId") ?? "");
-    const amountLimit = Number(formData.get("amountLimit"));
-    const period = String(formData.get("period") ?? "") as BudgetPeriod;
-    const startDate = String(formData.get("startDate") ?? "");
-    const endDateRaw = formData.get("endDate");
-    const endDate = endDateRaw ? String(endDateRaw) : undefined;
+    const raw = {
+      categoryId: formData.get("categoryId"),
+      amountLimit: formData.get("amountLimit"),
+      period: formData.get("period"),
+      startDate: formData.get("startDate"),
+      endDate: formData.get("endDate") ?? undefined,
+    };
 
-    if (!categoryId || !startDate || !period) {
-      return { error: "Completa categoría, período y fecha de inicio." };
+    const result = createBudgetSchema.safeParse(raw);
+    if (!result.success) {
+      const first = result.error.issues[0];
+      return { error: first?.message ?? "Datos inválidos." };
     }
-    if (!Number.isFinite(amountLimit) || amountLimit <= 0) {
-      return { error: "El monto límite debe ser mayor a cero." };
-    }
+
+    const { categoryId, amountLimit, period, startDate, endDate } = result.data;
+    const token = await getServerToken();
 
     const payload: CreateBudgetPayload = {
       categoryId,

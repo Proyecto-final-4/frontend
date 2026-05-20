@@ -1,5 +1,6 @@
 ﻿"use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createGoal, deleteGoal, updateGoal } from "@/sdk/goals";
 import { getServerToken } from "@/shared/utils/auth-server";
@@ -7,21 +8,41 @@ import type { SavingsGoal } from "@/types/goals";
 
 export type GoalActionResult = { ok: true; goal?: SavingsGoal } | { ok: false; error: string };
 
+const createGoalSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").trim(),
+  description: z.string().trim().optional(),
+  targetAmount: z.coerce.number().positive("El monto objetivo debe ser mayor a cero"),
+  targetDate: z.string().optional(),
+});
+
+const contributeGoalSchema = z.object({
+  goalId: z.string().min(1, "ID de meta requerido"),
+  amount: z.number().positive("El aporte debe ser mayor a cero"),
+  currentAmount: z.number().min(0),
+});
+
 function fail(err: unknown, fallback: string): GoalActionResult {
   return { ok: false, error: err instanceof Error ? err.message : fallback };
 }
 
 export async function createGoalAction(formData: FormData): Promise<GoalActionResult> {
   try {
-    const token = await getServerToken();
-    const name = String(formData.get("name") ?? "").trim();
-    const description = String(formData.get("description") ?? "").trim();
-    const targetAmount = Number(formData.get("targetAmount"));
-    const targetDate = String(formData.get("targetDate") ?? "").trim();
-    if (!name) return { ok: false, error: "El nombre es obligatorio" };
-    if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
-      return { ok: false, error: "El monto objetivo debe ser mayor a cero" };
+    const raw = {
+      name: formData.get("name"),
+      description: formData.get("description") ?? undefined,
+      targetAmount: formData.get("targetAmount"),
+      targetDate: formData.get("targetDate") ?? undefined,
+    };
+
+    const result = createGoalSchema.safeParse(raw);
+    if (!result.success) {
+      const first = result.error.issues[0];
+      return { ok: false, error: first?.message ?? "Datos inválidos." };
     }
+
+    const { name, description, targetAmount, targetDate } = result.data;
+    const token = await getServerToken();
+
     const goal = await createGoal(token, {
       name,
       description: description || undefined,
@@ -41,11 +62,16 @@ export async function contributeGoalAction(
   currentAmount: number,
 ): Promise<GoalActionResult> {
   try {
-    const token = await getServerToken();
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return { ok: false, error: "El aporte debe ser mayor a cero" };
+    const result = contributeGoalSchema.safeParse({ goalId, amount, currentAmount });
+    if (!result.success) {
+      const first = result.error.issues[0];
+      return { ok: false, error: first?.message ?? "Datos inválidos." };
     }
-    const goal = await updateGoal(token, goalId, { currentAmount: currentAmount + amount });
+
+    const token = await getServerToken();
+    const goal = await updateGoal(token, result.data.goalId, {
+      currentAmount: result.data.currentAmount + result.data.amount,
+    });
     revalidatePath("/goals");
     return { ok: true, goal };
   } catch (err) {
