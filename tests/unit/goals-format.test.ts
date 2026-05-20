@@ -2,19 +2,19 @@
 import { formatGoalMoney, goalProgressPercent } from "@/lib/goals-format";
 
 describe("goalProgressPercent", () => {
-  it("calcula el porcentaje acotado entre 0 y 100", () => {
+  it("computes percentage clamped between 0 and 100", () => {
     expect(goalProgressPercent(500_000, 2_000_000)).toBe(25);
     expect(goalProgressPercent(3_000_000, 2_000_000)).toBe(100);
     expect(goalProgressPercent(-100, 2_000_000)).toBe(0);
   });
 
-  it("devuelve 0 si el objetivo es invÃ¡lido", () => {
+  it("returns 0 when the target amount is invalid", () => {
     expect(goalProgressPercent(100, 0)).toBe(0);
   });
 });
 
 describe("formatGoalMoney", () => {
-  it("formatea en pesos colombianos", () => {
+  it("formats amounts in Colombian pesos", () => {
     expect(formatGoalMoney(1_000_000)).toContain("1");
   });
 });

@@ -1,13 +1,9 @@
-/** Prefijo WebKit usado por Chrome y Edge para la Web Speech API. */
+/** WebKit prefix used by Chrome and Edge for the Web Speech API. */
 interface Window {
   webkitSpeechRecognition?: SpeechRecognitionConstructor;
 }
 
-type SpeechRecognitionAvailability =
-  | "available"
-  | "downloaded"
-  | "downloadable"
-  | "unavailable";
+type SpeechRecognitionAvailability = "available" | "downloaded" | "downloadable" | "unavailable";
 
 interface SpeechRecognitionConstructor {
   new (): SpeechRecognition;

@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import {
-  useSpeechRecognition,
-  getNetworkErrorMessage,
-} from "@/hooks/use-speech-recognition";
+import { useSpeechRecognition, getNetworkErrorMessage } from "@/hooks/use-speech-recognition";
 
 describe("getNetworkErrorMessage", () => {
-  it("detecta visor Electron", () => {
+  it("detects Electron embedded viewer", () => {
     vi.stubGlobal("navigator", {
       ...navigator,
       userAgent: "Mozilla/5.0 Electron/30.0.0",
@@ -32,12 +29,12 @@ describe("useSpeechRecognition", () => {
     window.webkitSpeechRecognition = originalWebkit;
   });
 
-  it("reporta isSupported=false cuando la API no existe", () => {
+  it("reports isSupported=false when the API is missing", () => {
     const { result } = renderHook(() => useSpeechRecognition());
     expect(result.current.isSupported).toBe(false);
   });
 
-  it("reporta isSupported=true cuando SpeechRecognition existe", () => {
+  it("reports isSupported=true when SpeechRecognition exists", () => {
     class MockRecognition {
       lang = "";
       continuous = false;
@@ -60,7 +57,7 @@ describe("useSpeechRecognition", () => {
     expect(result.current.isSupported).toBe(true);
   });
 
-  it("invoca onTranscript con texto final", async () => {
+  it("calls onTranscript with final text", async () => {
     const onTranscript = vi.fn();
     const instances: MockRecognition[] = [];
 
@@ -85,9 +82,7 @@ describe("useSpeechRecognition", () => {
     }
     vi.stubGlobal("SpeechRecognition", MockRecognition);
 
-    const { result } = renderHook(() =>
-      useSpeechRecognition({ onTranscript, lang: "es-CO" }),
-    );
+    const { result } = renderHook(() => useSpeechRecognition({ onTranscript, lang: "es-CO" }));
 
     await act(async () => {
       await result.current.start();
@@ -110,7 +105,7 @@ describe("useSpeechRecognition", () => {
     expect(onTranscript).toHaveBeenCalledWith("hola mundo", true);
   });
 
-  it("reintenta en modo local tras error network en la nube", async () => {
+  it("retries in local mode after cloud network error", async () => {
     const instances: MockRecognition[] = [];
 
     class MockRecognition {

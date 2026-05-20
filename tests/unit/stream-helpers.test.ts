@@ -264,15 +264,15 @@ describe("buildSSEStream", () => {
     expect(calls).toEqual(["token", "tool_start", "tool_end", "token", "done"]);
   });
 
-  // ── Supresión de tokens de sub-agentes ─────────────────────────────────────
+  // ── Sub-agent token suppression ────────────────────────────────────────────
 
-  it("suprime tokens de mensajes mientras un sub-agente está activo", async () => {
+  it("suppresses message tokens while a sub-agent is active", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     await buildSSEStream(
       makeStream([
-        // Coordinador habla antes
+        // Coordinator speaks first
         { event: "messages/partial", data: [{ type: "ai", content: "Consultando..." }] },
-        // Sub-agente inicia
+        // Sub-agent starts
         {
           event: "events",
           data: {
@@ -282,9 +282,9 @@ describe("buildSSEStream", () => {
             data: { input: {} },
           },
         },
-        // Token interno del sub-agente → debe suprimirse
+        // Sub-agent internal token → should be suppressed
         { event: "messages/partial", data: [{ type: "ai", content: "Respuesta interna" }] },
-        // Sub-agente finaliza
+        // Sub-agent finishes
         {
           event: "events",
           data: {
@@ -294,7 +294,7 @@ describe("buildSSEStream", () => {
             data: { output: "resultado" },
           },
         },
-        // Coordinador retoma → debe emitirse
+        // Coordinator resumes → should be emitted
         { event: "messages/partial", data: [{ type: "ai", content: "Listo." }] },
       ]),
       send,
@@ -309,7 +309,7 @@ describe("buildSSEStream", () => {
     ]);
   });
 
-  it("suprime tokens durante error de sub-agente y los restaura al terminar", async () => {
+  it("suppresses tokens during sub-agent error and restores them after", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     await buildSSEStream(
       makeStream([
@@ -336,11 +336,11 @@ describe("buildSSEStream", () => {
       ]),
       send,
     );
-    const tipos = send.mock.calls.map((c) => c[0].type);
-    expect(tipos).toEqual(["tool_start", "tool_error", "token", "done"]);
+    const types = send.mock.calls.map((c) => c[0].type);
+    expect(types).toEqual(["tool_start", "tool_error", "token", "done"]);
   });
 
-  it("no suprime tokens de herramientas normales (sin sufijo _agent)", async () => {
+  it("does not suppress tokens from normal tools (no _agent suffix)", async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     await buildSSEStream(
       makeStream([
