@@ -32,7 +32,7 @@ export const UNDERTONES_DEFAULTS: UndertonesConfig = {
   paused: false,
 };
 
-/** Preset por defecto en login / AuthVisual (valores afinados) */
+/** Default preset for login / AuthVisual (tuned values). */
 export const FINANZIA_UNDERTONES: UndertonesConfig = {
   scale: 0.85,
   speed: 0.109,

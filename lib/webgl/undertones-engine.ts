@@ -12,13 +12,13 @@ function hexToRgb(hex: string): [number, number, number] {
 
 function compileShader(gl: WebGLRenderingContext, type: number, src: string) {
   const shader = gl.createShader(type);
-  if (!shader) throw new Error("No se pudo crear el shader");
+  if (!shader) throw new Error("Could not create shader");
   gl.shaderSource(shader, src);
   gl.compileShader(shader);
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    const log = gl.getShaderInfoLog(shader) ?? "error desconocido";
+    const log = gl.getShaderInfoLog(shader) ?? "unknown error";
     gl.deleteShader(shader);
-    throw new Error(`Compilación de shader fallida: ${log}`);
+    throw new Error(`Shader compilation failed: ${log}`);
   }
   return shader;
 }

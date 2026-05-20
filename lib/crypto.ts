@@ -1,24 +1,24 @@
 /**
- * Utilidades de cifrado RSA-OAEP para el cliente.
+ * RSA-OAEP encryption utilities for the browser client.
  *
- * El servidor expone GET /api/auth/public-key que retorna la clave pública RSA-2048 en Base64
- * (formato SPKI). Esta clave se usa para cifrar las credenciales antes de enviarlas al BFF,
- * de modo que el payload en las DevTools del navegador nunca contenga datos en texto plano.
+ * The server exposes GET /api/auth/public-key returning the RSA-2048 public key in Base64
+ * (SPKI format). That key encrypts credentials before they are sent to the BFF so the
+ * payload in browser DevTools never contains plaintext secrets.
  *
- * Algoritmo: RSA-OAEP con SHA-256 (compatible con Java OAEPWithSHA-256AndMGF1Padding/SHA-256).
+ * Algorithm: RSA-OAEP with SHA-256 (compatible with Java OAEPWithSHA-256AndMGF1Padding/SHA-256).
  */
 
 let cachedKey: CryptoKey | null = null;
 
 /**
- * Obtiene la clave pública RSA del servidor y la importa como CryptoKey.
- * El resultado se cachea en memoria para reutilizarse en el mismo ciclo de vida de la página.
+ * Fetches the server's RSA public key and imports it as a CryptoKey.
+ * The result is cached in memory for the current page lifecycle.
  */
 export async function getServerPublicKey(): Promise<CryptoKey> {
   if (cachedKey) return cachedKey;
 
   const res = await fetch("/api/auth/public-key", { method: "GET", cache: "no-store" });
-  if (!res.ok) throw new Error("No se pudo obtener la clave pública del servidor.");
+  if (!res.ok) throw new Error("Could not fetch the public key from the server.");
 
   const { publicKey } = (await res.json()) as { publicKey: string };
 
@@ -36,15 +36,15 @@ export async function getServerPublicKey(): Promise<CryptoKey> {
 }
 
 /**
- * Invalida la clave cacheada. Llamar si el servidor reinicia (error de descifrado en el backend).
+ * Clears the cached key. Call when the server restarts (backend decryption error).
  */
 export function invalidatePublicKeyCache(): void {
   cachedKey = null;
 }
 
 /**
- * Cifra un texto plano con la clave pública RSA-OAEP del servidor.
- * @returns Base64 del ciphertext listo para enviar al BFF.
+ * Encrypts plaintext with the server's RSA-OAEP public key.
+ * @returns Base64 ciphertext ready to send to the BFF.
  */
 export async function encryptCredential(plaintext: string): Promise<string> {
   const key = await getServerPublicKey();

@@ -1,6 +1,6 @@
 import type { Transition, Variants } from "framer-motion";
 
-/** Spring usado en elementos de entrada principales (Framer Stackwise). */
+/** Spring for primary enter animations (Framer Stackwise). */
 export const springEnter: Transition = {
   type: "spring",
   stiffness: 400,
@@ -8,7 +8,7 @@ export const springEnter: Transition = {
   mass: 1,
 };
 
-/** Spring suave para elementos secundarios o contenedores. */
+/** Softer spring for secondary elements or containers. */
 export const springSoft: Transition = {
   type: "spring",
   stiffness: 260,
@@ -16,14 +16,14 @@ export const springSoft: Transition = {
   mass: 1,
 };
 
-/** Tween de deceleración: cubic-bezier(0.27, 0, 0.51, 1). */
+/** Deceleration tween: cubic-bezier(0.27, 0, 0.51, 1). */
 export const tweenDecel: Transition = {
   type: "tween",
   ease: [0.27, 0, 0.51, 1],
   duration: 0.5,
 };
 
-/** Tween rápido para micro-interacciones (hover, focus). */
+/** Fast tween for micro-interactions (hover, focus). */
 export const tweenFast: Transition = {
   type: "tween",
   ease: [0.27, 0, 0.51, 1],
