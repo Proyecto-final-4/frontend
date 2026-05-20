@@ -429,7 +429,7 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
             <div className="w-14 h-14 rounded-2xl bg-primary/8 flex items-center justify-center mx-auto mb-6">
               <Sparkles className="w-7 h-7 text-primary" />
             </div>
-            <h1 className="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-3">
+            <h1 className="font-headline text-2xl font-extrabold text-on-surface tracking-tight mb-3 truncate sm:text-4xl sm:overflow-visible">
               {greeting}
             </h1>
             <p className="text-secondary text-base font-medium leading-relaxed">
