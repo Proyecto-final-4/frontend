@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { javaLogin } from "@/sdk/auth";
+import { LOGIN_ERROR_GENERIC } from "@/shared/constants/auth";
 import { setAuthCookies } from "@/shared/utils/cookies";
 
 export async function POST(request: NextRequest) {
@@ -17,8 +18,7 @@ export async function POST(request: NextRequest) {
     );
     setAuthCookies(response, auth);
     return response;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Error al iniciar sesión";
-    return NextResponse.json({ error: message }, { status: 401 });
+  } catch {
+    return NextResponse.json({ error: LOGIN_ERROR_GENERIC }, { status: 401 });
   }
 }

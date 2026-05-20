@@ -1,25 +1,28 @@
 import { AuthVisual } from "@/components/features/auth/AuthVisual";
 import { LoginForm } from "@/components/features/auth/LoginForm";
+import { UndertonesBackground } from "@/components/effects/UndertonesBackground";
 import { Logo } from "@/components/layout/Logo";
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex flex-col md:flex-row">
-      {/* Left: form */}
-      <div className="w-full md:w-[45%] lg:w-[40%] min-h-screen p-8 md:p-12 lg:p-16 flex flex-col justify-between bg-white relative z-10">
-        <Logo />
-        <LoginForm />
-        <div className="mt-auto text-center pt-8 border-t border-outline-variant/10">
-          <p className="text-sm text-on-surface-variant font-medium">
-            Not a member?{" "}
-            <a href="#" className="font-bold text-primary hover:underline ml-1">
-              Create an account
-            </a>
-          </p>
+    <main className="relative min-h-screen flex flex-col md:flex-row">
+      {/* Fondo WebGL: pantalla completa en móvil, panel derecho en desktop */}
+      <UndertonesBackground
+        className="absolute inset-0 z-0 md:left-[45%] lg:left-[40%] md:right-0"
+        preset="finanzia"
+        mouseEnabled
+      />
+
+      {/* Formulario */}
+      <div className="relative z-10 flex w-full min-h-screen flex-col bg-transparent px-8 pb-8 pt-6 pointer-events-none md:pointer-events-auto md:w-[45%] md:bg-background md:px-12 md:pb-12 md:pt-8 lg:w-[40%] lg:px-16 lg:pb-16 lg:pt-10 border-b border-border md:border-b-0 md:border-r">
+        <div className="pointer-events-auto w-full max-w-[400px] mx-auto shrink-0">
+          <Logo />
+        </div>
+        <div className="pointer-events-auto flex flex-1 w-full max-w-[400px] mx-auto flex-col justify-center min-h-0">
+          <LoginForm />
         </div>
       </div>
 
-      {/* Right: visual */}
       <AuthVisual />
     </main>
   );

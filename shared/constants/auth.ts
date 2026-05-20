@@ -1,4 +1,8 @@
 export const COOKIE_TOKEN = "auth_token";
+
+/** Mensaje genérico para fallos de login (no revelar si el usuario existe). */
+export const LOGIN_ERROR_GENERIC =
+  "Correo o contraseña incorrectos. Verifica tus datos e inténtalo de nuevo.";
 export const COOKIE_USER_INFO = "user_info";
 
 // 7 days
