@@ -21,3 +21,14 @@ export interface RegisterPayload {
   email: string;
   password: string;
 }
+
+export interface EncryptedLoginPayload {
+  encryptedEmail: string;
+  encryptedPassword: string;
+}
+
+export interface EncryptedRegisterPayload {
+  encryptedName: string;
+  encryptedEmail: string;
+  encryptedPassword: string;
+}

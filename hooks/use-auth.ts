@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { COOKIE_USER_INFO } from "@/shared/constants/auth";
+import { encryptCredential, invalidatePublicKeyCache } from "@/lib/crypto";
 import type { LoginPayload, RegisterPayload, UserInfo } from "@/types/auth";
 
 function readUserInfoCookie(): UserInfo | null {
@@ -33,29 +34,61 @@ export function useAuth(): UseAuthReturn {
   }));
 
   const login = useCallback(async (payload: LoginPayload) => {
+    let encryptedEmail: string;
+    let encryptedPassword: string;
+
+    try {
+      [encryptedEmail, encryptedPassword] = await Promise.all([
+        encryptCredential(payload.email),
+        encryptCredential(payload.password),
+      ]);
+    } catch {
+      invalidatePublicKeyCache();
+      throw new Error("Error al preparar las credenciales. Intenta de nuevo.");
+    }
+
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ encryptedEmail, encryptedPassword }),
     });
+
     if (!res.ok) {
-      const { error } = await res.json();
+      const { error } = (await res.json()) as { error?: string };
       throw new Error(error ?? "Error al iniciar sesión");
     }
+
     const user = (await res.json()) as UserInfo;
     setState({ user, isLoading: false });
   }, []);
 
   const register = useCallback(async (payload: RegisterPayload) => {
+    let encryptedName: string;
+    let encryptedEmail: string;
+    let encryptedPassword: string;
+
+    try {
+      [encryptedName, encryptedEmail, encryptedPassword] = await Promise.all([
+        encryptCredential(payload.name),
+        encryptCredential(payload.email),
+        encryptCredential(payload.password),
+      ]);
+    } catch {
+      invalidatePublicKeyCache();
+      throw new Error("Error al preparar las credenciales. Intenta de nuevo.");
+    }
+
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ encryptedName, encryptedEmail, encryptedPassword }),
     });
+
     if (!res.ok) {
-      const { error } = await res.json();
+      const { error } = (await res.json()) as { error?: string };
       throw new Error(error ?? "Error al registrar usuario");
     }
+
     const user = (await res.json()) as UserInfo;
     setState({ user, isLoading: false });
   }, []);

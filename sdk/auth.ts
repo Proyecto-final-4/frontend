@@ -1,5 +1,9 @@
 import { javaFetch } from "@/sdk/_http";
-import type { AuthResponse, LoginPayload, RegisterPayload } from "@/types/auth";
+import type {
+  AuthResponse,
+  EncryptedLoginPayload,
+  EncryptedRegisterPayload,
+} from "@/types/auth";
 
 function throwJavaApiError(text: string, fallback: string): never {
   try {
@@ -12,10 +16,10 @@ function throwJavaApiError(text: string, fallback: string): never {
 }
 
 /**
- * Calls POST /auth/login on the Java API.
+ * Calls POST /auth/login on the Java API with RSA-OAEP encrypted credentials.
  * Only use from BFF API routes (server-side).
  */
-export async function javaLogin(payload: LoginPayload): Promise<AuthResponse> {
+export async function javaLogin(payload: EncryptedLoginPayload): Promise<AuthResponse> {
   const res = await javaFetch("/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -29,10 +33,10 @@ export async function javaLogin(payload: LoginPayload): Promise<AuthResponse> {
 }
 
 /**
- * Calls POST /auth/register on the Java API.
+ * Calls POST /auth/register on the Java API with RSA-OAEP encrypted credentials.
  * Only use from BFF API routes (server-side).
  */
-export async function javaRegister(payload: RegisterPayload): Promise<AuthResponse> {
+export async function javaRegister(payload: EncryptedRegisterPayload): Promise<AuthResponse> {
   const res = await javaFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify(payload),
