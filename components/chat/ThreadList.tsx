@@ -4,6 +4,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Pencil, Check, X } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+import { sidebarNavLinkClasses } from "@/shared/constants/nav";
+
 interface Thread {
   thread_id: string;
   created_at: string;
@@ -44,7 +47,6 @@ export function ThreadList({ activeThreadId }: Props) {
     void loadThreads();
   }, [loadThreads, activeThreadId]);
 
-  // Focus input when entering edit mode
   useEffect(() => {
     if (editingId) editInputRef.current?.focus();
   }, [editingId]);
@@ -71,7 +73,6 @@ export function ThreadList({ activeThreadId }: Props) {
     const title = editValue.trim();
     setEditingId(null);
     setEditValue("");
-    // Optimistic update
     setThreads((prev) =>
       prev.map((t) =>
         t.thread_id === editingId ? { ...t, metadata: { ...t.metadata, title } } : t,
@@ -84,7 +85,6 @@ export function ThreadList({ activeThreadId }: Props) {
         body: JSON.stringify({ title }),
       });
     } catch {
-      // Reload to get correct state on failure
       void loadThreads();
     }
   };
@@ -102,88 +102,97 @@ export function ThreadList({ activeThreadId }: Props) {
     }
   };
 
-  if (!loaded || threads.length === 0) return null;
-
   return (
-    <div className="flex-grow overflow-y-auto space-y-0.5 mt-2 min-h-0">
-      <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50 mb-2">
+    <section className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden">
+      <p className="mb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/50">
         Conversaciones
       </p>
-      {threads.map((thread) => {
-        const title = (thread.metadata?.title as string | undefined) ?? "Conversación";
-        const isActive = thread.thread_id === activeThreadId;
-        const isEditing = editingId === thread.thread_id;
+      <div className="min-h-0 flex-1 space-y-0.5 overflow-x-hidden overflow-y-auto">
+        {!loaded ? (
+          <p className="px-4 text-xs text-muted-foreground">Cargando...</p>
+        ) : threads.length === 0 ? (
+          <p className="px-4 text-xs text-muted-foreground">Sin conversaciones aún</p>
+        ) : (
+          threads.map((thread) => {
+            const title = (thread.metadata?.title as string | undefined) ?? "Conversación";
+            const isActive = thread.thread_id === activeThreadId;
+            const isEditing = editingId === thread.thread_id;
 
-        return (
-          <div
-            key={thread.thread_id}
-            onClick={() => !isEditing && router.push(`/?thread=${thread.thread_id}`)}
-            className={`group w-full flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-sm font-medium text-left transition-colors duration-150 cursor-pointer ${
-              isActive
-                ? "bg-primary/10 text-primary"
-                : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
-            }`}
-          >
-            {isEditing ? (
-              /* ── Rename mode ── */
-              <>
-                <input
-                  ref={editInputRef}
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void confirmRename();
-                    if (e.key === "Escape") cancelEdit();
-                    e.stopPropagation();
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex-grow bg-surface-container border border-outline-variant/40 rounded-lg px-2 py-0.5 text-sm text-on-surface outline-none focus:ring-1 focus:ring-primary/50 min-w-0"
-                />
-                <button
-                  onClick={(e) => void confirmRename(e)}
-                  className="flex-shrink-0 p-1 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                  title="Guardar"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={cancelEdit}
-                  className="flex-shrink-0 p-1 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors"
-                  title="Cancelar"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </>
-            ) : (
-              /* ── Normal mode ── */
-              <>
-                <span className="flex-grow truncate">{title}</span>
-                {/* Action buttons — visible on hover or when active */}
-                <span className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span
-                    role="button"
-                    onClick={(e) => startEdit(e, thread)}
-                    className="p-1 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors"
-                    title="Renombrar"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </span>
-                  <span
-                    role="button"
-                    onClick={(e) => void handleDelete(e, thread.thread_id)}
-                    className={`p-1 rounded-lg hover:text-error text-on-surface-variant transition-colors ${
-                      deleting === thread.thread_id ? "animate-pulse" : ""
-                    }`}
-                    title="Eliminar"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </span>
-                </span>
-              </>
-            )}
-          </div>
-        );
-      })}
-    </div>
+            return (
+              <div
+                key={thread.thread_id}
+                onClick={() => !isEditing && router.push(`/?thread=${thread.thread_id}`)}
+                className={cn(
+                  "relative w-full min-w-0 cursor-pointer py-2.5 text-left",
+                  isEditing ? "flex items-center gap-1.5 px-3" : sidebarNavLinkClasses(isActive),
+                  !isEditing && "px-3",
+                )}
+              >
+                {isEditing ? (
+                  <>
+                    <input
+                      ref={editInputRef}
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void confirmRename();
+                        if (e.key === "Escape") cancelEdit();
+                        e.stopPropagation();
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="min-w-0 flex-grow rounded-lg border border-outline-variant/40 bg-surface-container px-2 py-0.5 text-sm text-on-surface outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                    <button
+                      onClick={(e) => void confirmRename(e)}
+                      className="flex-shrink-0 rounded-lg p-1 text-primary transition-colors hover:bg-primary/10"
+                      title="Guardar"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="flex-shrink-0 rounded-lg p-1 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                      title="Cancelar"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="block min-w-0 truncate pr-14">{title}</span>
+                    <span
+                      className={cn(
+                        "pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-transparent bg-accent/90 px-0.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100",
+                        isActive && "pointer-events-auto bg-primary/15 opacity-100",
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => startEdit(e, thread)}
+                        className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground"
+                        title="Renombrar"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => void handleDelete(e, thread.thread_id)}
+                        className={cn(
+                          "rounded-lg p-1 text-muted-foreground transition-colors hover:bg-background/60 hover:text-destructive",
+                          deleting === thread.thread_id && "animate-pulse",
+                        )}
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  </>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </section>
   );
 }

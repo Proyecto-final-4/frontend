@@ -53,7 +53,7 @@ export function MessageBubble(props: Props) {
   if (props.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[75%] bg-primary text-on-primary px-4 py-3 rounded-2xl rounded-br-sm text-sm font-medium leading-relaxed whitespace-pre-wrap">
+        <div className="max-w-[75%] bg-primary text-primary-foreground px-4 py-3 rounded-2xl rounded-br-sm text-sm font-medium leading-relaxed whitespace-pre-wrap shadow-sm">
           {props.content}
         </div>
       </div>
@@ -81,7 +81,7 @@ export function MessageBubble(props: Props) {
         const isLastPart = idx === parts.length - 1;
         return (
           <div key={idx} className="flex justify-start">
-            <div className="max-w-[80%] bg-surface-container px-4 py-3 rounded-2xl rounded-bl-sm text-sm text-on-surface leading-relaxed">
+            <div className="max-w-[80%] bg-card border border-border px-4 py-3 rounded-2xl rounded-bl-sm text-sm text-foreground leading-relaxed">
               <ReactMarkdown components={MD_COMPONENTS}>{part.content}</ReactMarkdown>
               {isStreaming && isLastPart && (
                 <span className="inline-block w-[2px] h-4 bg-primary ml-0.5 animate-pulse rounded-sm align-middle" />
