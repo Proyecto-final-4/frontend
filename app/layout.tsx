@@ -11,7 +11,7 @@ const manrope = Manrope({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "FinanzIA",
-  description: "Your intelligent curator for wealth and wisdom",
+  description: "Tu curador inteligente de finanzas personales",
 };
 
 export default function RootLayout({
