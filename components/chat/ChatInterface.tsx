@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Sparkles } from "lucide-react";
+import { ArrowUp, Mic, MicOff, Sparkles } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { InterruptBubble } from "./InterruptBubble";
 import type { ChatMessage, AssistantPart } from "@/types/chat";
 import { emptyAssistantParts, applyToken, applyToolUpdate } from "@/lib/chat-reducers";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 
 const PROMPT_CHIPS = ["Verificar patrimonio", "Top gastos del mes", "Predicciones de ahorro"];
 
@@ -48,6 +49,23 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const speechBaseRef = useRef("");
+
+  const {
+    isSupported: isSpeechSupported,
+    isListening,
+    error: speechError,
+    toggle: toggleSpeech,
+    stop: stopSpeech,
+  } = useSpeechRecognition({
+    lang: "es-ES",
+    onTranscript: (text, isFinal) => {
+      const base = speechBaseRef.current;
+      const next = base ? `${base} ${text}`.trim() : text;
+      if (isFinal) speechBaseRef.current = next;
+      setInput(next);
+    },
+  });
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
@@ -249,6 +267,9 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
       const trimmed = content.trim();
       if (!trimmed || isStreaming) return;
 
+      stopSpeech();
+      speechBaseRef.current = "";
+
       setMessages((prev) => [
         ...prev,
         { id: `user-${Date.now()}`, role: "user", content: trimmed },
@@ -287,7 +308,7 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
         setStreamingParts(null);
       }
     },
-    [isStreaming, threadId, consumeStream],
+    [isStreaming, threadId, consumeStream, stopSpeech],
   );
 
   // ── Resume after a HITL interrupt ──────────────────────────────────────────
@@ -345,6 +366,18 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
       sendMessage(input);
     }
   };
+
+  const handleToggleSpeech = () => {
+    if (!isListening) speechBaseRef.current = input;
+    toggleSpeech();
+  };
+
+  const inputDisabled = isStreaming || loadingHistory;
+  const micTitle = !isSpeechSupported
+    ? "Dictado por voz no disponible en este navegador"
+    : isListening
+      ? "Detener dictado"
+      : "Dictar con el micrófono";
 
   const hasMessages = messages.length > 0 || streamingParts !== null;
   const greeting = userName ? `Hola, ${userName}` : "Hola";
@@ -431,20 +464,50 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
               ref={textareaRef}
               rows={1}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                if (isListening) stopSpeech();
+                speechBaseRef.current = e.target.value;
+                setInput(e.target.value);
+              }}
               onKeyDown={handleKeyDown}
-              disabled={isStreaming || loadingHistory}
+              disabled={inputDisabled}
               className="flex-grow bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 font-medium text-sm outline-none py-1.5 resize-none leading-relaxed disabled:opacity-50 max-h-[120px] overflow-y-auto"
-              placeholder="Pregunta cualquier cosa sobre tus finanzas..."
+              placeholder={
+                isListening
+                  ? "Escuchando… habla ahora"
+                  : "Pregunta cualquier cosa sobre tus finanzas..."
+              }
             />
             <button
+              type="button"
+              onClick={handleToggleSpeech}
+              disabled={inputDisabled || !isSpeechSupported}
+              title={micTitle}
+              aria-label={micTitle}
+              aria-pressed={isListening}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0 mb-0.5 disabled:opacity-40 disabled:cursor-not-allowed ${
+                isListening
+                  ? "bg-error-container text-on-error-container animate-pulse"
+                  : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+              }`}
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
+            <button
+              type="button"
               onClick={() => sendMessage(input)}
-              disabled={isStreaming || loadingHistory || !input.trim()}
+              disabled={inputDisabled || !input.trim()}
               className="bg-primary text-on-primary w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:opacity-90 active:scale-95 flex-shrink-0 mb-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ArrowUp className="w-4 h-4" />
             </button>
           </div>
+
+          {speechError && (
+            <p className="text-center mt-2 text-[10px] text-error font-medium" role="alert">
+              {speechError}
+            </p>
+          )}
 
           <p className="text-center mt-3 text-[9px] text-on-surface-variant/30 font-bold uppercase tracking-[0.25em]">
             FinanzIA Intelligence Curator • 2026

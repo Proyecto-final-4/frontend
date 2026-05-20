@@ -263,4 +263,109 @@ describe("buildSSEStream", () => {
     const calls = send.mock.calls.map((c) => c[0].type);
     expect(calls).toEqual(["token", "tool_start", "tool_end", "token", "done"]);
   });
+
+  // ── Supresión de tokens de sub-agentes ─────────────────────────────────────
+
+  it("suprime tokens de mensajes mientras un sub-agente está activo", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    await buildSSEStream(
+      makeStream([
+        // Coordinador habla antes
+        { event: "messages/partial", data: [{ type: "ai", content: "Consultando..." }] },
+        // Sub-agente inicia
+        {
+          event: "events",
+          data: {
+            event: "on_tool_start",
+            run_id: "sa-1",
+            name: "transactions_agent",
+            data: { input: {} },
+          },
+        },
+        // Token interno del sub-agente → debe suprimirse
+        { event: "messages/partial", data: [{ type: "ai", content: "Respuesta interna" }] },
+        // Sub-agente finaliza
+        {
+          event: "events",
+          data: {
+            event: "on_tool_end",
+            run_id: "sa-1",
+            name: "transactions_agent",
+            data: { output: "resultado" },
+          },
+        },
+        // Coordinador retoma → debe emitirse
+        { event: "messages/partial", data: [{ type: "ai", content: "Listo." }] },
+      ]),
+      send,
+    );
+    const calls = send.mock.calls.map((c) => c[0]);
+    expect(calls).toEqual([
+      { type: "token", content: "Consultando..." },
+      { type: "tool_start", toolCallId: "sa-1", name: "transactions_agent", input: {} },
+      { type: "tool_end", toolCallId: "sa-1", name: "transactions_agent", result: "resultado" },
+      { type: "token", content: "Listo." },
+      { type: "done" },
+    ]);
+  });
+
+  it("suprime tokens durante error de sub-agente y los restaura al terminar", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    await buildSSEStream(
+      makeStream([
+        {
+          event: "events",
+          data: {
+            event: "on_tool_start",
+            run_id: "sa-2",
+            name: "budgets_agent",
+            data: { input: {} },
+          },
+        },
+        { event: "messages/partial", data: [{ type: "ai", content: "Token suprimido" }] },
+        {
+          event: "events",
+          data: {
+            event: "on_tool_error",
+            run_id: "sa-2",
+            name: "budgets_agent",
+            data: { error: "fallo" },
+          },
+        },
+        { event: "messages/partial", data: [{ type: "ai", content: "Retomado." }] },
+      ]),
+      send,
+    );
+    const tipos = send.mock.calls.map((c) => c[0].type);
+    expect(tipos).toEqual(["tool_start", "tool_error", "token", "done"]);
+  });
+
+  it("no suprime tokens de herramientas normales (sin sufijo _agent)", async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+    await buildSSEStream(
+      makeStream([
+        {
+          event: "events",
+          data: {
+            event: "on_tool_start",
+            run_id: "t-1",
+            name: "get_transactions",
+            data: { input: {} },
+          },
+        },
+        { event: "messages/partial", data: [{ type: "ai", content: "Visible" }] },
+        {
+          event: "events",
+          data: {
+            event: "on_tool_end",
+            run_id: "t-1",
+            name: "get_transactions",
+            data: { output: [] },
+          },
+        },
+      ]),
+      send,
+    );
+    expect(send).toHaveBeenCalledWith({ type: "token", content: "Visible" });
+  });
 });

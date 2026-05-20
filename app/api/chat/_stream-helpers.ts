@@ -8,6 +8,16 @@ type RawChunk = {
 };
 
 /**
+ * Herramientas que corresponden a sub-agentes delegados.
+ * Sus tokens de respuesta interna se suprimen; solo se muestra el ToolCallBubble.
+ */
+const SUB_AGENT_PATTERN = /_agent$/;
+
+function esSubAgente(nombre: string): boolean {
+  return SUB_AGENT_PATTERN.test(nombre);
+}
+
+/**
  * Adapts LangGraph SDK stream events into a set of structured SSE events.
  *
  * Stream modes consumed: "messages", "tools", "tasks"
@@ -25,6 +35,9 @@ export async function buildSSEStream(
   runStream: AsyncIterable<RawChunk>,
   send: SendFn,
 ): Promise<void> {
+  // Contador de sub-agentes activos. Mientras sea > 0 se suprimen los tokens.
+  let subAgentesActivos = 0;
+
   for await (const chunk of runStream) {
     // ── Fatal run error ──────────────────────────────────────────────────────
     if (chunk.event === "error") {
@@ -35,8 +48,50 @@ export async function buildSSEStream(
       return;
     }
 
+    // ── Tool lifecycle events (via "events" stream mode) ─────────────────────
+    // Se procesa ANTES que los tokens para actualizar el contador de sub-agentes
+    // antes de que lleguen sus mensajes/partial.
+    if (chunk.event === "events") {
+      const d = chunk.data as {
+        event: string;
+        name?: string;
+        run_id?: string;
+        data?: { input?: unknown; output?: unknown; error?: unknown };
+      };
+
+      const id = d.run_id ?? d.name ?? "unknown";
+      const nombre = d.name ?? "";
+
+      if (d.event === "on_tool_start") {
+        if (esSubAgente(nombre)) subAgentesActivos++;
+        await send({
+          type: "tool_start",
+          toolCallId: id,
+          name: nombre,
+          input: d.data?.input,
+        });
+      } else if (d.event === "on_tool_end") {
+        if (esSubAgente(nombre)) subAgentesActivos = Math.max(0, subAgentesActivos - 1);
+        await send({
+          type: "tool_end",
+          toolCallId: id,
+          name: nombre,
+          result: d.data?.output,
+        });
+      } else if (d.event === "on_tool_error") {
+        if (esSubAgente(nombre)) subAgentesActivos = Math.max(0, subAgentesActivos - 1);
+        await send({
+          type: "tool_error",
+          toolCallId: id,
+          name: nombre,
+          error: d.data?.error,
+        });
+      }
+    }
+
     // ── AI text tokens (cumulative) ──────────────────────────────────────────
-    if (chunk.event === "messages/partial") {
+    // Se omiten si provienen de un sub-agente activo.
+    if (chunk.event === "messages/partial" && subAgentesActivos === 0) {
       const msgs = chunk.data as Array<{
         type: string;
         content: string | Array<{ type: string; text?: string }>;
@@ -54,41 +109,6 @@ export async function buildSSEStream(
                 .join("");
 
         if (text) await send({ type: "token", content: text });
-      }
-    }
-
-    // ── Tool lifecycle events (via "events" stream mode) ─────────────────────
-    if (chunk.event === "events") {
-      const d = chunk.data as {
-        event: string;
-        name?: string;
-        run_id?: string;
-        data?: { input?: unknown; output?: unknown; error?: unknown };
-      };
-
-      const id = d.run_id ?? d.name ?? "unknown";
-
-      if (d.event === "on_tool_start") {
-        await send({
-          type: "tool_start",
-          toolCallId: id,
-          name: d.name ?? "",
-          input: d.data?.input,
-        });
-      } else if (d.event === "on_tool_end") {
-        await send({
-          type: "tool_end",
-          toolCallId: id,
-          name: d.name ?? "",
-          result: d.data?.output,
-        });
-      } else if (d.event === "on_tool_error") {
-        await send({
-          type: "tool_error",
-          toolCallId: id,
-          name: d.name ?? "",
-          error: d.data?.error,
-        });
       }
     }
 
