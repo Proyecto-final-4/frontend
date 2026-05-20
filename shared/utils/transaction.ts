@@ -1,12 +1,7 @@
 import type { TransactionType } from "@/types/transaction";
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 2,
-  }).format(amount);
-}
+// Re-exportar desde money-format para compatibilidad
+export { formatCurrency } from "@/lib/money-format";
 
 export function formatTransactionDate(date: string): string {
   const parsed = new Date(`${date}T12:00:00`);

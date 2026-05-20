@@ -1,10 +1,8 @@
+import { formatMoney } from "@/lib/money-format";
+
+// Delega a money-format con perfil "dashboard" (ARS, sin decimales)
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatMoney(amount, "dashboard");
 }
 export function formatPercent(value: number, fractionDigits = 1): string {
   return `${value.toFixed(fractionDigits)}%`;

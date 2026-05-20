@@ -1,4 +1,5 @@
 import type { BudgetPeriod } from "@/types/budget";
+import { formatMoney } from "@/lib/money-format";
 
 const PERIOD_LABELS: Record<BudgetPeriod, string> = {
   DAILY: "Diario",
@@ -10,12 +11,9 @@ export function formatBudgetPeriod(period: BudgetPeriod): string {
   return PERIOD_LABELS[period];
 }
 
+// Delega a money-format con perfil "budget" (ARS, sin decimales)
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatMoney(amount, "budget");
 }
 
 export function getProgressBarClass(percentage: number): string {
