@@ -3,6 +3,9 @@ import { Sparkles } from "lucide-react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { SidebarProvider } from "@/components/layout/SidebarContext";
+import { SidebarDrawer } from "@/components/layout/SidebarDrawer";
+import { MenuButton } from "@/components/layout/MenuButton";
 import { COOKIE_USER_INFO } from "@/shared/constants/auth";
 import type { UserInfo } from "@/types/auth";
 
@@ -28,35 +31,40 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen overflow-hidden text-foreground bg-background">
-        <AppSidebar activeHref="/" activeThreadId={initialThreadId} />
+      <SidebarProvider>
+        <div className="flex h-screen overflow-hidden text-foreground bg-background">
+          <SidebarDrawer>
+            <AppSidebar activeHref="/" activeThreadId={initialThreadId} />
+          </SidebarDrawer>
 
-        <main className="relative flex flex-grow flex-col overflow-hidden chat-gradient">
-          <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-8 backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
-                <Sparkles className="h-4 w-4 text-primary" />
+          <main className="relative flex min-w-0 flex-grow flex-col overflow-hidden chat-gradient">
+            <header className="sticky top-0 z-40 flex h-16 w-full items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-xl md:px-8">
+              <MenuButton />
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-base font-bold leading-tight text-foreground font-headline">
+                    FinanzIA Agent
+                  </p>
+                  <p className="text-[10px] font-bold uppercase leading-none tracking-widest text-primary">
+                    Listo para ayudarte
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-base font-bold leading-tight text-foreground font-headline">
-                  FinanzIA Agent
-                </p>
-                <p className="text-[10px] font-bold uppercase leading-none tracking-widest text-primary">
-                  Listo para ayudarte
-                </p>
-              </div>
+            </header>
+
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <ChatInterface
+                key={initialThreadId ?? "new"}
+                userName={userName}
+                initialThreadId={initialThreadId}
+              />
             </div>
-          </header>
-
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <ChatInterface
-              key={initialThreadId ?? "new"}
-              userName={userName}
-              initialThreadId={initialThreadId}
-            />
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      </SidebarProvider>
     </AuthGuard>
   );
 }
