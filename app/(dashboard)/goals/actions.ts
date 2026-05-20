@@ -5,9 +5,7 @@ import { createGoal, deleteGoal, updateGoal } from "@/sdk/goals";
 import { getServerToken } from "@/shared/utils/auth-server";
 import type { SavingsGoal } from "@/types/goals";
 
-export type GoalActionResult =
-  | { ok: true; goal?: SavingsGoal }
-  | { ok: false; error: string };
+export type GoalActionResult = { ok: true; goal?: SavingsGoal } | { ok: false; error: string };
 
 function fail(err: unknown, fallback: string): GoalActionResult {
   return { ok: false, error: err instanceof Error ? err.message : fallback };

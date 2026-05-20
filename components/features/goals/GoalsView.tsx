@@ -1,9 +1,18 @@
 ﻿"use client";
+
 import { useMemo, useState, useTransition } from "react";
+import { motion } from "framer-motion";
 import { CheckCircle2, PiggyBank, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { CollapsibleFormPanel } from "@/components/ui/collapsible-form-panel";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { EmptyState } from "@/components/ui/empty-state";
+import { AnimateIn } from "@/components/ui/animate-in";
+import { staggerContainer, staggerItem } from "@/lib/animations";
 import {
   completeGoalAction,
   contributeGoalAction,
@@ -12,24 +21,11 @@ import {
 } from "@/app/(dashboard)/goals/actions";
 import { formatGoalDate, formatGoalMoney, goalProgressPercent } from "@/lib/goals-format";
 import type { SavingsGoal } from "@/types/goals";
+import { cn } from "@/lib/utils";
 
 interface GoalsViewProps {
   initialGoals: SavingsGoal[];
   loadError: string | null;
-}
-
-function GoalProgressBar({ percent, isCompleted }: { percent: number; isCompleted: boolean }) {
-  return (
-    <div className="mt-4">
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-container-high">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${isCompleted ? "bg-primary" : "bg-primary/80"}`}
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      <p className="mt-1 text-right text-xs font-medium text-on-surface-variant">{percent}%</p>
-    </div>
-  );
 }
 
 function GoalCard({
@@ -50,7 +46,7 @@ function GoalCard({
   function handleContribute() {
     const amount = Number(contribution);
     if (!Number.isFinite(amount) || amount <= 0) {
-      setFeedback("Ingresa un monto vÃ¡lido");
+      setFeedback("Ingresa un monto válido");
       return;
     }
     setFeedback(null);
@@ -75,7 +71,7 @@ function GoalCard({
   }
 
   function handleDelete() {
-    if (!window.confirm(`Â¿Eliminar la meta "${goal.name}"?`)) return;
+    if (!window.confirm(`¿Eliminar la meta "${goal.name}"?`)) return;
     startTransition(async () => {
       const result = await deleteGoalAction(goal.id);
       if (result.ok) onDeleted(goal.id);
@@ -85,71 +81,94 @@ function GoalCard({
 
   const feedbackIsError =
     feedback !== null &&
-    (feedback.includes("Error") || feedback.includes("vÃ¡lido") || feedback.includes("obligatorio"));
+    (feedback.includes("Error") || feedback.includes("válido") || feedback.includes("obligatorio"));
 
   return (
-    <article
-      className={`rounded-2xl border p-5 ${goal.isCompleted ? "border-primary/30 bg-primary/5" : "border-outline-variant/30 bg-surface-container-lowest"}`}
+    <Card
+      variant={goal.isCompleted ? "outline" : "default"}
+      hoverable={!goal.isCompleted}
+      className={cn(goal.isCompleted && "border-primary/30 bg-primary/5 grayscale-[20%]")}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className={`text-lg font-bold font-headline ${goal.isCompleted ? "line-through" : ""}`}>
-          {goal.name}
-        </h3>
-        {goal.isCompleted && (
-          <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-[10px] font-bold uppercase text-primary">
-            Completada
-          </span>
-        )}
-      </div>
-      <p className={`mt-1 text-sm text-on-surface-variant ${goal.isCompleted ? "line-through" : ""}`}>
-        {goal.description?.trim() || "Sin descripciÃ³n"}
-      </p>
-      <GoalProgressBar percent={percent} isCompleted={goal.isCompleted} />
-      <div className="mt-2 flex justify-between text-sm gap-2 flex-wrap">
-        <span className="font-semibold">
-          {formatGoalMoney(goal.currentAmount)} / {formatGoalMoney(goal.targetAmount)}
-        </span>
-        {!goal.isCompleted && (
-          <span className="text-on-surface-variant">Faltan {formatGoalMoney(remaining)}</span>
-        )}
-      </div>
-      <p className="mt-2 text-xs text-on-surface-variant">Fecha lÃ­mite: {formatGoalDate(goal.targetDate)}</p>
-      {!goal.isCompleted && (
-        <div className="mt-4 flex flex-wrap gap-2 items-end">
-          <div className="flex flex-col gap-1 min-w-[140px]">
-            <Label htmlFor={`contrib-${goal.id}`} className="text-xs">
-              Aporte
-            </Label>
-            <Input
-              id={`contrib-${goal.id}`}
-              type="number"
-              min={1}
-              value={contribution}
-              onChange={(e) => setContribution(e.target.value)}
-              disabled={isPending}
-              className="h-8"
-            />
-          </div>
-          <Button type="button" size="sm" onClick={handleContribute} disabled={isPending}>
-            <PiggyBank className="w-3.5 h-3.5" />
-            Aportar
-          </Button>
-          <Button type="button" size="sm" variant="secondary" onClick={handleComplete} disabled={isPending}>
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Completar
-          </Button>
+      <CardHeader className="mb-0">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className={cn(goal.isCompleted && "line-through text-muted-foreground")}>
+            {goal.name}
+          </CardTitle>
+          {goal.isCompleted && (
+            <Badge variant="lime" dot>
+              Completada
+            </Badge>
+          )}
         </div>
-      )}
-      <div className="mt-3 flex items-center justify-between gap-2">
-        {feedback && (
-          <p className={`text-xs ${feedbackIsError ? "text-destructive" : "text-primary"}`}>{feedback}</p>
+        <p className={cn("mt-1 text-sm text-muted-foreground", goal.isCompleted && "line-through")}>
+          {goal.description?.trim() || "Sin descripción"}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Progress value={percent} max={100} showPercent />
+        <div className="mt-2 flex justify-between text-sm gap-2 flex-wrap">
+          <span className="font-semibold tabular-nums">
+            {formatGoalMoney(goal.currentAmount)} / {formatGoalMoney(goal.targetAmount)}
+          </span>
+          {!goal.isCompleted && (
+            <span className="text-muted-foreground">Faltan {formatGoalMoney(remaining)}</span>
+          )}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Fecha límite: {formatGoalDate(goal.targetDate)}
+        </p>
+        {!goal.isCompleted && (
+          <div className="mt-4 flex flex-wrap gap-2 items-end">
+            <div className="flex flex-col gap-1 min-w-[140px]">
+              <Label htmlFor={`contrib-${goal.id}`} className="text-xs">
+                Aporte
+              </Label>
+              <Input
+                id={`contrib-${goal.id}`}
+                type="number"
+                min={1}
+                value={contribution}
+                onChange={(e) => setContribution(e.target.value)}
+                disabled={isPending}
+                className="h-8"
+              />
+            </div>
+            <Button type="button" size="sm" onClick={handleContribute} disabled={isPending}>
+              <PiggyBank className="w-3.5 h-3.5" />
+              Aportar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={handleComplete}
+              disabled={isPending}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Completar
+            </Button>
+          </div>
         )}
-        <Button type="button" size="sm" variant="destructive" className="ml-auto" onClick={handleDelete} disabled={isPending}>
+      </CardContent>
+      <CardFooter className="mt-0 px-0 pb-0">
+        {feedback && (
+          <p className={cn("text-xs", feedbackIsError ? "text-destructive" : "text-primary")}>
+            {feedback}
+          </p>
+        )}
+        <Button
+          type="button"
+          size="sm"
+          variant="destructive"
+          className="ml-auto"
+          onClick={handleDelete}
+          disabled={isPending}
+        >
           <Trash2 className="w-3.5 h-3.5" />
           Eliminar
         </Button>
-      </div>
-    </article>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -163,11 +182,18 @@ function GoalsGrid({
   onDeleted: (id: string) => void;
 }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <motion.div
+      className="grid gap-4 lg:grid-cols-2"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       {goals.map((goal) => (
-        <GoalCard key={goal.id} goal={goal} onUpdated={onUpdated} onDeleted={onDeleted} />
+        <motion.div key={goal.id} variants={staggerItem}>
+          <GoalCard goal={goal} onUpdated={onUpdated} onDeleted={onDeleted} />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -220,34 +246,45 @@ export function GoalsView({ initialGoals, loadError }: GoalsViewProps) {
           {loadError}
         </p>
       )}
-      <section className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6">
-        <h2 className="text-lg font-semibold mb-4">Nueva meta</h2>
-        <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="goal-name">Nombre</Label>
-            <Input id="goal-name" name="name" required placeholder="Ej. Viaje a Cartagena" />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="goal-desc">DescripciÃ³n</Label>
-            <Input id="goal-desc" name="description" placeholder="Opcional" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="goal-target">Monto objetivo (COP)</Label>
-            <Input id="goal-target" name="targetAmount" type="number" min={1} required placeholder="2000000" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="goal-date">Fecha lÃ­mite</Label>
-            <Input id="goal-date" name="targetDate" type="date" />
-          </div>
-          <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={isCreating}>
-              Crear meta
-            </Button>
-            {formError && <p className="text-sm text-destructive">{formError}</p>}
-            {formSuccess && <p className="text-sm text-primary">{formSuccess}</p>}
-          </div>
-        </form>
-      </section>
+      <AnimateIn variant="fade-up">
+        <CollapsibleFormPanel
+          title="Nueva meta"
+          className="rounded-xl border-0 glass-card p-6 text-card-foreground shadow-sm"
+        >
+          <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="goal-name">Nombre</Label>
+              <Input id="goal-name" name="name" required placeholder="Ej. Viaje a Cartagena" />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="goal-desc">Descripción</Label>
+              <Input id="goal-desc" name="description" placeholder="Opcional" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="goal-target">Monto objetivo (COP)</Label>
+              <Input
+                id="goal-target"
+                name="targetAmount"
+                type="number"
+                min={1}
+                required
+                placeholder="2000000"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="goal-date">Fecha límite</Label>
+              <Input id="goal-date" name="targetDate" type="date" />
+            </div>
+            <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+              <Button type="submit" disabled={isCreating}>
+                Crear meta
+              </Button>
+              {formError && <p className="text-sm text-destructive">{formError}</p>}
+              {formSuccess && <p className="text-sm text-primary">{formSuccess}</p>}
+            </div>
+          </form>
+        </CollapsibleFormPanel>
+      </AnimateIn>
       {activeGoals.length > 0 && (
         <section>
           <h2 className="text-lg font-semibold mb-4">En progreso</h2>
@@ -269,9 +306,11 @@ export function GoalsView({ initialGoals, loadError }: GoalsViewProps) {
         </section>
       )}
       {goals.length === 0 && !loadError && (
-        <p className="text-center text-on-surface-variant py-12">
-          AÃºn no tienes metas. Crea una arriba o pÃ­dele al agente en el chat.
-        </p>
+        <EmptyState
+          icon={PiggyBank}
+          title="Sin metas"
+          description="Crea una arriba o pídele al agente en el chat."
+        />
       )}
     </div>
   );

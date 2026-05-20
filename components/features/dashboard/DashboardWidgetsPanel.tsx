@@ -1,1 +1,113 @@
-import { TrendingUp, Wallet } from "lucide-react"; import {   formatCurrency,   formatDelta,   formatPercent,   SAVINGS_RATE_TONE_CLASS,   savingsRateTone, } from "@/lib/finance-format"; import type { DashboardWidgetsData } from "@/lib/dashboard-widgets"; function EmptyWidgets() {   return (     <div className="rounded-2xl border border-dashed border-outline-variant/40 bg-surface-container-lowest/60 p-6 text-center">       <Wallet className="mx-auto mb-3 h-8 w-8 text-on-surface-variant/50" />       <p className="text-sm font-semibold text-on-surface">Sin transacciones este mes</p>     </div>   ); } function DeltaRow({   label,   absolute,   invertColors, }: {   label: string;   absolute: number;   invertColors?: boolean; }) {   const good = invertColors ? absolute < 0 : absolute > 0;   const bad = invertColors ? absolute > 0 : absolute < 0;   const colorClass = good ? "text-emerald-700" : bad ? "text-red-700" : "text-on-surface-variant";   return (     <div className="flex items-center justify-between gap-2 text-sm">       <span className="text-on-surface-variant">{label}</span>       <span className={`font-semibold tabular-nums ${colorClass}`}>{formatDelta(absolute)}</span>     </div>   ); } export function DashboardWidgetsPanel({ data }: { data: DashboardWidgetsData }) {   if (data.kind === "empty") return <EmptyWidgets />;   const { summary, trends, topExpenses } = data;   const toneClass = SAVINGS_RATE_TONE_CLASS[savingsRateTone(summary.savingsRate)];   return (     <div className="space-y-4">       <section className={`rounded-2xl border p-4 ${toneClass}`}>         <h2 className="text-xs font-bold uppercase">Tasa de ahorro</h2>         <p className="text-3xl font-bold">           {summary.savingsRate === null ? "—" : formatPercent(summary.savingsRate)}         </p>       </section>       <section className="rounded-2xl border bg-white/70 p-4">         <h2 className="mb-3 text-xs font-bold uppercase">Top gastos</h2>         <ul className="space-y-3">           {topExpenses.map((item) => (             <li key={item.categoryId}>               <div className="flex justify-between text-sm">                 <span>{item.categoryName}</span>                 <span>{formatPercent(item.percentage, 0)}</span>               </div>               <div className="h-2 rounded-full bg-surface-container">                 <div                   className="h-full bg-primary rounded-full"                   style={{ width: `${item.percentage}%` }}                 />               </div>               <p className="text-right text-xs">{formatCurrency(item.total)}</p>             </li>           ))}         </ul>       </section>       <section className="rounded-2xl border bg-white/70 p-4">         <h2 className="mb-3 text-xs font-bold uppercase">vs mes anterior</h2>         <DeltaRow label="Ingresos" absolute={trends.diff.incomeChange.absolute} />         <DeltaRow label="Gastos" absolute={trends.diff.expenseChange.absolute} invertColors />       </section>     </div>   ); }
+import { Wallet } from "lucide-react";
+import {
+  formatCurrency,
+  formatDelta,
+  formatPercent,
+  SAVINGS_RATE_TONE_CLASS,
+  savingsRateTone,
+} from "@/lib/finance-format";
+import type { DashboardWidgetsData } from "@/lib/dashboard-widgets";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionLabel } from "@/components/ui/section-label";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { AnimateIn } from "@/components/ui/animate-in";
+import { cn } from "@/lib/utils";
+
+function EmptyWidgets() {
+  return (
+    <EmptyState
+      icon={Wallet}
+      title="Sin transacciones este mes"
+      description="Registra movimientos o pídele al asistente que los agregue."
+    />
+  );
+}
+
+function DeltaRow({
+  label,
+  absolute,
+  invertColors,
+}: {
+  label: string;
+  absolute: number;
+  invertColors?: boolean;
+}) {
+  const good = invertColors ? absolute < 0 : absolute > 0;
+  const bad = invertColors ? absolute > 0 : absolute < 0;
+  const badgeVariant = good ? "success" : bad ? "error" : "outline";
+
+  return (
+    <div className="flex items-center justify-between gap-2 text-sm py-1">
+      <span className="text-muted-foreground">{label}</span>
+      <Badge variant={badgeVariant}>{formatDelta(absolute)}</Badge>
+    </div>
+  );
+}
+
+export function DashboardWidgetsPanel({ data }: { data: DashboardWidgetsData }) {
+  if (data.kind === "empty") return <EmptyWidgets />;
+
+  const { summary, trends, topExpenses } = data;
+  const toneClass = SAVINGS_RATE_TONE_CLASS[savingsRateTone(summary.savingsRate)];
+
+  return (
+    <div className="space-y-4">
+      <AnimateIn variant="fade-up">
+        <Card variant="glass" className={cn("border", toneClass)}>
+          <CardHeader className="mb-2">
+            <SectionLabel>Tasa de ahorro</SectionLabel>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold gradient-text tabular-nums">
+              {summary.savingsRate === null ? "—" : formatPercent(summary.savingsRate)}
+            </p>
+          </CardContent>
+        </Card>
+      </AnimateIn>
+
+      <AnimateIn variant="fade-up" delay={0.08}>
+        <Card variant="default" hoverable>
+          <CardHeader className="mb-2">
+            <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
+              Top gastos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              {topExpenses.map((item) => (
+                <li key={item.categoryId}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="text-foreground">{item.categoryName}</span>
+                    <span className="text-muted-foreground tabular-nums">
+                      {formatPercent(item.percentage, 0)}
+                    </span>
+                  </div>
+                  <Progress value={item.percentage} max={100} />
+                  <p className="text-right text-xs text-muted-foreground mt-1 tabular-nums">
+                    {formatCurrency(item.total)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </AnimateIn>
+
+      <AnimateIn variant="fade-up" delay={0.16}>
+        <Card variant="default" hoverable>
+          <CardHeader className="mb-2">
+            <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">
+              vs mes anterior
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <DeltaRow label="Ingresos" absolute={trends.diff.incomeChange.absolute} />
+            <DeltaRow label="Gastos" absolute={trends.diff.expenseChange.absolute} invertColors />
+          </CardContent>
+        </Card>
+      </AnimateIn>
+    </div>
+  );
+}
