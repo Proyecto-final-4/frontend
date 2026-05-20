@@ -15,7 +15,7 @@ export const NAV_LINKS: NavLink[] = [
   { href: "/goals", label: "Metas", icon: Flag },
 ];
 
-/** Estilo unificado del ítem activo en el sidebar (sin borde lateral ni doble tinte). */
+/** Unified active sidebar item style (no side border or double tint). */
 export function sidebarNavLinkClasses(isActive: boolean) {
   return cn(
     "group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors duration-200",

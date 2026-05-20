@@ -44,7 +44,7 @@ export function useAuth(): UseAuthReturn {
       ]);
     } catch {
       invalidatePublicKeyCache();
-      throw new Error("Error al preparar las credenciales. Intenta de nuevo.");
+      throw new Error("Failed to prepare credentials. Please try again.");
     }
 
     const res = await fetch("/api/auth/login", {
@@ -55,7 +55,7 @@ export function useAuth(): UseAuthReturn {
 
     if (!res.ok) {
       const { error } = (await res.json()) as { error?: string };
-      throw new Error(error ?? "Error al iniciar sesión");
+      throw new Error(error ?? "Failed to sign in");
     }
 
     const user = (await res.json()) as UserInfo;
@@ -75,7 +75,7 @@ export function useAuth(): UseAuthReturn {
       ]);
     } catch {
       invalidatePublicKeyCache();
-      throw new Error("Error al preparar las credenciales. Intenta de nuevo.");
+      throw new Error("Failed to prepare credentials. Please try again.");
     }
 
     const res = await fetch("/api/auth/register", {
@@ -86,7 +86,7 @@ export function useAuth(): UseAuthReturn {
 
     if (!res.ok) {
       const { error } = (await res.json()) as { error?: string };
-      throw new Error(error ?? "Error al registrar usuario");
+      throw new Error(error ?? "Failed to register user");
     }
 
     const user = (await res.json()) as UserInfo;

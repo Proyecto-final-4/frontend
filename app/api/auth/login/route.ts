@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
   if (!body?.encryptedEmail || !body?.encryptedPassword) {
     return NextResponse.json(
-      { error: "encryptedEmail y encryptedPassword son requeridos" },
+      { error: "encryptedEmail and encryptedPassword are required" },
       { status: 400 },
     );
   }

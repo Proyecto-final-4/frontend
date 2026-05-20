@@ -14,7 +14,7 @@ const TOOL_LABELS: Record<string, string> = {
   create_category: "Creando categoría",
   update_category: "Actualizando categoría",
   delete_category: "Eliminando categoría",
-  // Sub-agentes delegados
+  // Delegated sub-agents
   transactions_agent: "Consultando agente de transacciones",
   budgets_agent: "Consultando agente de presupuestos",
   goals_agent: "Consultando agente de metas",

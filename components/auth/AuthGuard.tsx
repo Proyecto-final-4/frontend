@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { COOKIE_USER_INFO } from "@/shared/constants/auth";
 
 /**
- * Lee la cookie user_info en el cliente.
- * En SSR devuelve true porque el middleware ya validó el token en el servidor;
- * esta verificación sólo corre en el navegador.
+ * Reads the user_info cookie on the client.
+ * Returns true during SSR because middleware already validated the token on the server;
+ * this check only runs in the browser.
  */
 function hasSession(): boolean {
   if (typeof document === "undefined") return true;
@@ -19,16 +19,16 @@ interface AuthGuardProps {
 }
 
 /**
- * Guard de autenticación del lado del cliente.
+ * Client-side authentication guard.
  *
- * Propósito: segunda línea de defensa tras el middleware.
- * Cubre casos que el middleware no puede interceptar:
- *   – Navegación SPA (Next.js router) sin petición al servidor
- *   – Expiración de cookie mientras la pestaña está abierta
- *   – Eliminación manual de cookies desde DevTools
+ * Purpose: second line of defense after middleware.
+ * Covers cases middleware cannot intercept:
+ *   – SPA navigation (Next.js router) without a server request
+ *   – Cookie expiry while the tab stays open
+ *   – Manual cookie removal from DevTools
  *
- * En caso de no detectar sesión activa redirige a /login sin flash
- * visible porque el servidor ya habría redirigido antes de renderizar.
+ * Redirects to /login when no active session is detected, without a visible flash
+ * because the server would have redirected before render.
  */
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();

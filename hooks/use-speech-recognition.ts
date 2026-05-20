@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UseSpeechRecognitionOptions {
-  /** Código BCP-47 del idioma (por defecto español). */
+  /** BCP-47 language code (defaults to Spanish). */
   lang?: string;
   onTranscript?: (text: string, isFinal: boolean) => void;
 }
@@ -32,7 +32,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Idioma no disponible sin conexión. En Chrome, instala el paquete de español en ajustes de idioma.",
 };
 
-/** Mensaje contextual cuando falla la conexión al servicio en la nube de Google. */
+/** Contextual message when the Google cloud speech service connection fails. */
 export function getNetworkErrorMessage(): string {
   if (typeof window === "undefined") {
     return "No se pudo conectar al servicio de reconocimiento de voz.";

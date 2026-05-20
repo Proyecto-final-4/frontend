@@ -6,7 +6,7 @@ import { Logo } from "@/components/layout/Logo";
 export default function LoginPage() {
   return (
     <main className="relative min-h-screen flex flex-col md:flex-row">
-      {/* Fondo WebGL: pantalla completa en móvil, panel derecho en desktop */}
+      {/* WebGL background: full screen on mobile, right panel on desktop */}
       <UndertonesBackground
         className="absolute inset-0 z-0 md:left-[45%] lg:left-[40%] md:right-0"
         preset="finanzia"

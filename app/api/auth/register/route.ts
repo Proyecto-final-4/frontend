@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
   if (!body?.encryptedName || !body?.encryptedEmail || !body?.encryptedPassword) {
     return NextResponse.json(
-      { error: "encryptedName, encryptedEmail y encryptedPassword son requeridos" },
+      { error: "encryptedName, encryptedEmail, and encryptedPassword are required" },
       { status: 400 },
     );
   }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     setAuthCookies(response, auth);
     return response;
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error al registrar usuario";
+    const message = err instanceof Error ? err.message : "Failed to register user";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
