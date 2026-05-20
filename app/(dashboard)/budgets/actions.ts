@@ -19,10 +19,10 @@ export async function createBudgetAction(
     const endDate = endDateRaw ? String(endDateRaw) : undefined;
 
     if (!categoryId || !startDate || !period) {
-      return { error: "Completa categoria, periodo y fecha de inicio." };
+      return { error: "Completa categoría, período y fecha de inicio." };
     }
     if (!Number.isFinite(amountLimit) || amountLimit <= 0) {
-      return { error: "El monto limite debe ser mayor a cero." };
+      return { error: "El monto límite debe ser mayor a cero." };
     }
 
     const payload: CreateBudgetPayload = {

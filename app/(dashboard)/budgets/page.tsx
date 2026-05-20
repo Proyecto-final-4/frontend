@@ -5,6 +5,7 @@ import { getBudgets, getBudgetStatus } from "@/sdk/budgets";
 import { getCategories } from "@/sdk/categories";
 import { getServerToken } from "@/shared/utils/auth-server";
 import type { BudgetWithStatus } from "@/types/budget";
+import type { Category } from "@/types/category";
 
 async function loadBudgetsWithStatus(token: string): Promise<BudgetWithStatus[]> {
   const budgets = await getBudgets(token);
@@ -21,19 +22,34 @@ async function loadBudgetsWithStatus(token: string): Promise<BudgetWithStatus[]>
 }
 
 export default async function BudgetsPage() {
-  const token = await getServerToken();
-  const [budgets, categories] = await Promise.all([
-    loadBudgetsWithStatus(token),
-    getCategories(token),
-  ]);
+  let budgets: BudgetWithStatus[] = [];
+  let categories: Category[] = [];
+  let loadError: string | null = null;
+
+  try {
+    const token = await getServerToken();
+    const [loadedBudgets, loadedCategories] = await Promise.all([
+      loadBudgetsWithStatus(token),
+      getCategories(token),
+    ]);
+    budgets = loadedBudgets;
+    categories = loadedCategories;
+  } catch (err) {
+    loadError = err instanceof Error ? err.message : "No se pudieron cargar los presupuestos";
+  }
 
   return (
     <DashboardShell
       activeHref="/budgets"
       title="Presupuestos"
-      subtitle="Control de gasto por categoria"
+      subtitle="Control de gasto por categoría"
     >
       <div className="max-w-5xl mx-auto space-y-8">
+        {loadError ? (
+          <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {loadError}
+          </p>
+        ) : null}
         <BudgetCreateForm categories={categories} />
         <section>
           <h2 className="text-base font-bold text-on-surface font-headline mb-4">

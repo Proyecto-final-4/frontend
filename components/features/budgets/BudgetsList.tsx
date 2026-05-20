@@ -1,4 +1,10 @@
+"use client";
+
+import { Wallet } from "lucide-react";
+import { motion } from "framer-motion";
 import { BudgetCard } from "@/components/features/budgets/BudgetCard";
+import { EmptyState } from "@/components/ui/empty-state";
+import { staggerContainer, staggerItem } from "@/lib/animations";
 import type { BudgetWithStatus } from "@/types/budget";
 
 interface BudgetsListProps {
@@ -8,17 +14,26 @@ interface BudgetsListProps {
 export function BudgetsList({ budgets }: BudgetsListProps) {
   if (budgets.length === 0) {
     return (
-      <p className="text-sm text-on-surface-variant rounded-2xl border border-dashed border-outline-variant/40 p-8 text-center">
-        Aun no tienes presupuestos. Crea uno con el formulario o pidelo al asistente en el chat.
-      </p>
+      <EmptyState
+        icon={Wallet}
+        title="Sin presupuestos"
+        description="Crea uno con el formulario o pídelo al asistente en el chat."
+      />
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <motion.div
+      className="grid gap-4 md:grid-cols-2"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       {budgets.map((budget) => (
-        <BudgetCard key={budget.id} budget={budget} />
+        <motion.div key={budget.id} variants={staggerItem}>
+          <BudgetCard budget={budget} />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
