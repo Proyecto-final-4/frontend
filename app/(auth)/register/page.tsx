@@ -1,11 +1,9 @@
-import Link from "next/link";
-
 import { AuthVisual } from "@/components/features/auth/AuthVisual";
-import { LoginForm } from "@/components/features/auth/LoginForm";
+import { RegisterForm } from "@/components/features/auth/RegisterForm";
 import { UndertonesBackground } from "@/components/effects/UndertonesBackground";
 import { Logo } from "@/components/layout/Logo";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main className="relative min-h-screen flex flex-col md:flex-row">
       {/* WebGL background: full screen on mobile, right panel on desktop */}
@@ -21,13 +19,7 @@ export default function LoginPage() {
           <Logo />
         </div>
         <div className="pointer-events-auto flex flex-1 w-full max-w-[400px] mx-auto flex-col justify-center min-h-0">
-          <LoginForm />
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            ¿No tienes cuenta?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
-              Regístrate
-            </Link>
-          </p>
+          <RegisterForm />
         </div>
       </div>
 
