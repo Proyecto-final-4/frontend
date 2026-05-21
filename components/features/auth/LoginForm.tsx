@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
@@ -147,6 +148,15 @@ export function LoginForm() {
               {fieldErrors.password}
             </p>
           )}
+        </div>
+
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
         </div>
 
         {error && (

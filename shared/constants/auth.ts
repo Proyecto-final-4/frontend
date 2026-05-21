@@ -8,8 +8,8 @@ export const COOKIE_USER_INFO = "user_info";
 // 7 days
 export const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
-// Public auth routes (login / register)
-export const AUTH_ROUTES = ["/login", "/register"];
+// Public auth routes (login / register / forgot-password / reset-password)
+export const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 // Routes that require a valid token.
 // "/" is matched exactly; all others are matched by prefix.

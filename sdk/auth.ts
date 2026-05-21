@@ -1,5 +1,11 @@
 import { javaFetch } from "@/sdk/_http";
-import type { AuthResponse, EncryptedLoginPayload, EncryptedRegisterPayload } from "@/types/auth";
+import type {
+  AuthResponse,
+  EncryptedLoginPayload,
+  EncryptedRegisterPayload,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from "@/types/auth";
 
 function throwJavaApiError(text: string, fallback: string): never {
   try {
@@ -43,4 +49,34 @@ export async function javaRegister(payload: EncryptedRegisterPayload): Promise<A
   }
 
   return res.json() as Promise<AuthResponse>;
+}
+
+/**
+ * Calls POST /auth/forgot-password on the Java API (plain text — no encryption).
+ * Only use from BFF API routes (server-side).
+ */
+export async function javaForgotPassword(payload: ForgotPasswordRequest): Promise<void> {
+  const res = await javaFetch("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throwJavaApiError(await res.text(), "Failed to process request");
+  }
+}
+
+/**
+ * Calls POST /auth/reset-password on the Java API (plain text — no encryption).
+ * Only use from BFF API routes (server-side).
+ */
+export async function javaResetPassword(payload: ResetPasswordRequest): Promise<void> {
+  const res = await javaFetch("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throwJavaApiError(await res.text(), "Failed to reset password");
+  }
 }
