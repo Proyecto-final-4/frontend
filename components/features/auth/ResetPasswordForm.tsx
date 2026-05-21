@@ -82,6 +82,11 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
     if (!applyFieldValidation(newPassword, confirmPassword)) return;
 
+    if (!token) {
+      setError("El enlace no es válido o ha expirado.");
+      return;
+    }
+
     setError(null);
 
     try {
