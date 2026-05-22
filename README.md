@@ -11,7 +11,7 @@
 
 **Interfaz conversacional · BFF · Orquestación de IA**
 
-*Donde el usuario vive la experiencia. Donde la seguridad empieza.*
+_Donde el usuario vive la experiencia. Donde la seguridad empieza._
 
 </div>
 
@@ -27,11 +27,7 @@ La experiencia conversacional que el usuario ve y usa. Chat-first, diseño premi
 
 ### BFF (Backend For Frontend)
 
-Una capa de servidor implementada como API Routes de Next.js que:
-
-- Gestiona el JWT del usuario.
-- Encripta credenciales con RSA antes de enviarlas al backend Java.
-- Actúa como proxy seguro entre el navegador y los servicios backend.
+Una capa de servidor implementada como API Routes de Next.js que gestiona el JWT del usuario, encripta credenciales con RSA antes de enviarlas al backend Java, y actúa como proxy seguro entre el navegador y los servicios backend.
 
 Ninguna clave de API, token de autenticación ni endpoint del backend llega al navegador del usuario final.
 
@@ -39,20 +35,20 @@ Ninguna clave de API, token de autenticación ni endpoint del backend llega al n
 
 ## Stack tecnológico
 
-| Capa | Tecnología | Versión |
-| --- | --- | --- |
-| Framework | Next.js App Router | 16.x |
-| UI | React | 19 |
-| Lenguaje | TypeScript strict mode | 5 |
-| Estilos | Tailwind CSS | v4 |
-| Componentes UI | Shadcn UI + Base UI | — |
-| Validación de formularios | Zod | 4.x |
-| Animaciones | Framer Motion | 12.x |
-| SDK del agente IA | `@langchain/langgraph-sdk` | 1.x |
-| Renderizado markdown | `react-markdown` | 10.x |
-| Testing | Vitest + Testing Library | — |
-| Calidad de código | ESLint · Prettier · Husky · commitlint | — |
-| Despliegue | Vercel | — |
+| Capa                   | Tecnología                             | Versión |
+| ---------------------- | -------------------------------------- | -------- |
+| Framework              | Next.js App Router                     | 16.x     |
+| UI                     | React                                  | 19       |
+| Lenguaje               | TypeScript strict mode                 | 5        |
+| Estilos                | Tailwind CSS                           | v4       |
+| Componentes UI         | Shadcn UI + Base UI                    | —        |
+| Validación formularios | Zod                                    | 4.x      |
+| Animaciones            | Framer Motion                          | 12.x     |
+| SDK agente IA          | `@langchain/langgraph-sdk`             | 1.x      |
+| Renderizado markdown   | `react-markdown`                       | 10.x     |
+| Testing                | Vitest + Testing Library               | —        |
+| Calidad de código      | ESLint · Prettier · Husky · commitlint | —        |
+| Despliegue             | Vercel                                 | —        |
 
 ---
 
@@ -101,17 +97,17 @@ http://localhost:3000
 
 ## Scripts disponibles
 
-| Comando | Descripción |
-| --- | --- |
-| `npm run dev` | Servidor de desarrollo con hot reload |
-| `npm run build` | Build de producción con verificación TypeScript completa |
-| `npm run start` | Servidor de producción |
-| `npm run lint` | ESLint — debe salir con 0 errores |
-| `npm run format` | Prettier — auto-formatea archivos |
-| `npm run format:check` | Verifica formato sin modificar |
-| `npm run test` | Vitest modo CI |
-| `npm run test:watch` | Vitest modo watch |
-| `npm run validate:env` | Verifica variables requeridas |
+| Comando                | Descripción                                              |
+| ---------------------- | -------------------------------------------------------- |
+| `npm run dev`          | Servidor de desarrollo con hot reload                    |
+| `npm run build`        | Build producción con verificación TypeScript completa    |
+| `npm run start`        | Servidor producción                                      |
+| `npm run lint`         | ESLint — debe salir con 0 errores                        |
+| `npm run format`       | Prettier — auto-formatea archivos                        |
+| `npm run format:check` | Verifica formato sin modificar                           |
+| `npm run test`         | Vitest modo CI                                           |
+| `npm run test:watch`   | Vitest modo watch                                        |
+| `npm run validate:env` | Verifica variables requeridas                            |
 
 ---
 
@@ -220,7 +216,7 @@ Este patrón se aplica a:
 
 ## Rol del BFF y flujo de seguridad
 
-El navegador nunca recibe ni gestiona directamente:
+El BFF es crítico para la postura de seguridad del sistema. El navegador nunca recibe ni gestiona directamente:
 
 - JWT del usuario autenticado
 - Clave de OpenAI
@@ -262,7 +258,7 @@ sequenceDiagram
 flowchart TD
     A["Usuario ingresa email"] --> B["POST /forgot-password"]
     B --> C["BFF llama backend"]
-    C --> D["Backend genera token"]
+    C --> D["Backend busca por HMAC y genera token"]
     D --> E["Backend envía email"]
     E --> F["Usuario abre enlace"]
     F --> G["/reset-password?token=uuid"]
@@ -276,9 +272,7 @@ flowchart TD
 
 ## Sistema de diseño — The Intelligent Curator
 
-La filosofía visual es:
-
-> “La interfaz no presenta datos, los distila.”
+El diseño de FinanzIA sigue la filosofía **Architectural Clarity**: la interfaz no presenta datos, los distila.
 
 ---
 
@@ -286,48 +280,48 @@ La filosofía visual es:
 
 ### Regla sin bordes
 
-Las separaciones entre secciones se hacen exclusivamente mediante cambios de superficie.
-
-Nunca usar:
+Las separaciones entre secciones se definen exclusivamente mediante cambios de superficie.
 
 ```css
+/* Evitar este patrón */
 border: 1px solid;
 ```
 
-### Jerarquía tonal
+### Jerarquía tonal de superficies
 
-| Elemento | Token |
-| --- | --- |
-| Fondo principal | `surface` |
-| Sidebar | `surface_container_low` |
-| Cards | `surface_container` |
-| Usuario IA | `primary_container` |
-| Modales | `surface_lowest` + blur |
+| Elemento           | Token de color                                  |
+| ------------------ | ------------------------------------------------ |
+| Fondo principal    | `surface` — `#f8f9fa`                            |
+| Sidebar            | `surface_container_low`                          |
+| Cards              | `surface_container`                              |
+| Burbujas IA        | `surface_container`                              |
+| Usuario            | `primary_container` — `#006064`                  |
+| Modales            | `surface_lowest` + `backdrop-blur: 24px`         |
 
-### Tipografía
+### Tipografía editorial dual
 
-| Uso | Fuente |
-| --- | --- |
-| Headlines | Manrope |
-| Texto | Inter |
+| Uso       | Fuente  | Criterio                                           |
+| --------- | -------- | -------------------------------------------------- |
+| Headlines | Manrope  | `letter-spacing: -0.02em`                          |
+| Cuerpo    | Inter    | Legibilidad alta para texto financiero             |
 
-### Sombras
+### Sombras con identidad
 
 ```css
-box-shadow: 0px 12px 32px rgba(0, 70, 74, 0.06);
+box-shadow: 0 12px 32px rgba(0, 70, 74, 0.06);
 ```
 
-### Animaciones
+### Animaciones premium
 
 ```css
-cubic-bezier(0.4, 0, 0.2, 1)
+transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 ```
 
 ---
 
 ## CI/CD
 
-Pipeline de GitHub Actions:
+Pipeline GitHub Actions:
 
 ```mermaid
 flowchart LR
@@ -337,23 +331,21 @@ flowchart LR
     D --> E["build"]
 ```
 
-### Validaciones
-
-| Paso | Qué valida |
-| --- | --- |
-| `validate:env` | Variables requeridas |
-| `lint` | ESLint sin errores |
-| `format:check` | Prettier sin diferencias |
-| `test` | Todos los tests pasan |
-| `build` | `next build` sin errores |
+| Paso             | Qué valida                                      |
+| ---------------- | ------------------------------------------------ |
+| `validate:env`   | Variables requeridas presentes en CI             |
+| `lint`           | ESLint sin errores                               |
+| `format:check`   | Prettier sin diferencias                         |
+| `test`           | Todos los tests pasan                            |
+| `build`          | `next build` sin errores                         |
 
 El deploy a Vercel ocurre automáticamente al hacer merge a `main`.
 
 ---
 
-## Commits y hooks
+## Commits y pre-commit hooks
 
-Husky gestiona dos hooks:
+Husky gestiona dos hooks automáticos.
 
 ### pre-commit
 
@@ -365,9 +357,7 @@ Bloquea commits si detecta:
 
 ### commit-msg
 
-Valida formato Conventional Commits.
-
-### Ejemplos válidos
+Valida formato vía commitlint.
 
 ```bash
 git commit -m "feat(auth): add forgot password flow with email recovery"
@@ -395,9 +385,9 @@ git commit -m "chore(deps): update next to 16.2.1"
 
 ## Variables de entorno
 
-| Variable | Scope | Requerida | Descripción |
-| --- | --- | --- |---|
-| `BACKEND_JAVA_ENDPOINT` | Server-side only | ✅ Sí | URL completa backend Java |
-| `OPENAI_API_KEY` | Server-side only | ✅ Sí | Clave OpenAI para LangGraph |
+| Variable                | Scope            | Requerida | Descripción                    |
+| ----------------------- | ---------------- | ---------- | ------------------------------ |
+| `BACKEND_JAVA_ENDPOINT` | Server-side only | ✅ Sí      | URL completa backend Java      |
+| `OPENAI_API_KEY`        | Server-side only | ✅ Sí      | Clave OpenAI para LangGraph    |
 
-Ambas variables son exclusivamente server-side y nunca llegan al navegador gracias a Next.js.
+Ambas variables son exclusivamente server-side. Next.js garantiza que no lleguen al navegador.
