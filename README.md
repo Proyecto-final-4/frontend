@@ -40,7 +40,7 @@ Ninguna clave de API, token de autenticación ni endpoint del backend llega al n
 ## Stack tecnológico
 
 | Capa | Tecnología | Versión |
-|---|---|---|
+| --- | --- | --- |
 | Framework | Next.js App Router | 16.x |
 | UI | React | 19 |
 | Lenguaje | TypeScript strict mode | 5 |
@@ -102,7 +102,7 @@ http://localhost:3000
 ## Scripts disponibles
 
 | Comando | Descripción |
-|---|---|
+| --- | --- |
 | `npm run dev` | Servidor de desarrollo con hot reload |
 | `npm run build` | Build de producción con verificación TypeScript completa |
 | `npm run start` | Servidor de producción |
@@ -297,7 +297,7 @@ border: 1px solid;
 ### Jerarquía tonal
 
 | Elemento | Token |
-|---|---|
+| --- | --- |
 | Fondo principal | `surface` |
 | Sidebar | `surface_container_low` |
 | Cards | `surface_container` |
@@ -307,7 +307,7 @@ border: 1px solid;
 ### Tipografía
 
 | Uso | Fuente |
-|---|---|
+| --- | --- |
 | Headlines | Manrope |
 | Texto | Inter |
 
@@ -340,7 +340,7 @@ flowchart LR
 ### Validaciones
 
 | Paso | Qué valida |
-|---|---|
+| --- | --- |
 | `validate:env` | Variables requeridas |
 | `lint` | ESLint sin errores |
 | `format:check` | Prettier sin diferencias |
@@ -396,7 +396,7 @@ git commit -m "chore(deps): update next to 16.2.1"
 ## Variables de entorno
 
 | Variable | Scope | Requerida | Descripción |
-|---|---|---|---|
+| --- | --- | --- |---|
 | `BACKEND_JAVA_ENDPOINT` | Server-side only | ✅ Sí | URL completa backend Java |
 | `OPENAI_API_KEY` | Server-side only | ✅ Sí | Clave OpenAI para LangGraph |
 
