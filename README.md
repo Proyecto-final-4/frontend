@@ -36,19 +36,19 @@ Ninguna clave de API, token de autenticación ni endpoint del backend llega al n
 ## Stack tecnológico
 
 | Capa                   | Tecnología                             | Versión |
-| ---------------------- | -------------------------------------- | -------- |
-| Framework              | Next.js App Router                     | 16.x     |
-| UI                     | React                                  | 19       |
-| Lenguaje               | TypeScript strict mode                 | 5        |
-| Estilos                | Tailwind CSS                           | v4       |
-| Componentes UI         | Shadcn UI + Base UI                    | —        |
-| Validación formularios | Zod                                    | 4.x      |
-| Animaciones            | Framer Motion                          | 12.x     |
-| SDK agente IA          | `@langchain/langgraph-sdk`             | 1.x      |
-| Renderizado markdown   | `react-markdown`                       | 10.x     |
-| Testing                | Vitest + Testing Library               | —        |
-| Calidad de código      | ESLint · Prettier · Husky · commitlint | —        |
-| Despliegue             | Vercel                                 | —        |
+| ---------------------- | -------------------------------------- | ------- |
+| Framework              | Next.js App Router                     | 16.x    |
+| UI                     | React                                  | 19      |
+| Lenguaje               | TypeScript strict mode                 | 5       |
+| Estilos                | Tailwind CSS                           | v4      |
+| Componentes UI         | Shadcn UI + Base UI                    | —       |
+| Validación formularios | Zod                                    | 4.x     |
+| Animaciones            | Framer Motion                          | 12.x    |
+| SDK agente IA          | `@langchain/langgraph-sdk`             | 1.x     |
+| Renderizado markdown   | `react-markdown`                       | 10.x    |
+| Testing                | Vitest + Testing Library               | —       |
+| Calidad de código      | ESLint · Prettier · Husky · commitlint | —       |
+| Despliegue             | Vercel                                 | —       |
 
 ---
 
@@ -97,17 +97,17 @@ http://localhost:3000
 
 ## Scripts disponibles
 
-| Comando                | Descripción                                              |
-| ---------------------- | -------------------------------------------------------- |
-| `npm run dev`          | Servidor de desarrollo con hot reload                    |
-| `npm run build`        | Build producción con verificación TypeScript completa    |
-| `npm run start`        | Servidor producción                                      |
-| `npm run lint`         | ESLint — debe salir con 0 errores                        |
-| `npm run format`       | Prettier — auto-formatea archivos                        |
-| `npm run format:check` | Verifica formato sin modificar                           |
-| `npm run test`         | Vitest modo CI                                           |
-| `npm run test:watch`   | Vitest modo watch                                        |
-| `npm run validate:env` | Verifica variables requeridas                            |
+| Comando                | Descripción                                           |
+| ---------------------- | ----------------------------------------------------- |
+| `npm run dev`          | Servidor de desarrollo con hot reload                 |
+| `npm run build`        | Build producción con verificación TypeScript completa |
+| `npm run start`        | Servidor producción                                   |
+| `npm run lint`         | ESLint — debe salir con 0 errores                     |
+| `npm run format`       | Prettier — auto-formatea archivos                     |
+| `npm run format:check` | Verifica formato sin modificar                        |
+| `npm run test`         | Vitest modo CI                                        |
+| `npm run test:watch`   | Vitest modo watch                                     |
+| `npm run validate:env` | Verifica variables requeridas                         |
 
 ---
 
@@ -289,21 +289,21 @@ border: 1px solid;
 
 ### Jerarquía tonal de superficies
 
-| Elemento           | Token de color                                  |
-| ------------------ | ------------------------------------------------ |
-| Fondo principal    | `surface` — `#f8f9fa`                            |
-| Sidebar            | `surface_container_low`                          |
-| Cards              | `surface_container`                              |
-| Burbujas IA        | `surface_container`                              |
-| Usuario            | `primary_container` — `#006064`                  |
-| Modales            | `surface_lowest` + `backdrop-blur: 24px`         |
+| Elemento        | Token de color                           |
+| --------------- | ---------------------------------------- |
+| Fondo principal | `surface` — `#f8f9fa`                    |
+| Sidebar         | `surface_container_low`                  |
+| Cards           | `surface_container`                      |
+| Burbujas IA     | `surface_container`                      |
+| Usuario         | `primary_container` — `#006064`          |
+| Modales         | `surface_lowest` + `backdrop-blur: 24px` |
 
 ### Tipografía editorial dual
 
-| Uso       | Fuente  | Criterio                                           |
-| --------- | -------- | -------------------------------------------------- |
-| Headlines | Manrope  | `letter-spacing: -0.02em`                          |
-| Cuerpo    | Inter    | Legibilidad alta para texto financiero             |
+| Uso       | Fuente  | Criterio                               |
+| --------- | ------- | -------------------------------------- |
+| Headlines | Manrope | `letter-spacing: -0.02em`              |
+| Cuerpo    | Inter   | Legibilidad alta para texto financiero |
 
 ### Sombras con identidad
 
@@ -331,13 +331,13 @@ flowchart LR
     D --> E["build"]
 ```
 
-| Paso             | Qué valida                                      |
-| ---------------- | ------------------------------------------------ |
-| `validate:env`   | Variables requeridas presentes en CI             |
-| `lint`           | ESLint sin errores                               |
-| `format:check`   | Prettier sin diferencias                         |
-| `test`           | Todos los tests pasan                            |
-| `build`          | `next build` sin errores                         |
+| Paso           | Qué valida                           |
+| -------------- | ------------------------------------ |
+| `validate:env` | Variables requeridas presentes en CI |
+| `lint`         | ESLint sin errores                   |
+| `format:check` | Prettier sin diferencias             |
+| `test`         | Todos los tests pasan                |
+| `build`        | `next build` sin errores             |
 
 El deploy a Vercel ocurre automáticamente al hacer merge a `main`.
 
@@ -385,9 +385,9 @@ git commit -m "chore(deps): update next to 16.2.1"
 
 ## Variables de entorno
 
-| Variable                | Scope            | Requerida | Descripción                    |
-| ----------------------- | ---------------- | ---------- | ------------------------------ |
-| `BACKEND_JAVA_ENDPOINT` | Server-side only | ✅ Sí      | URL completa backend Java      |
-| `OPENAI_API_KEY`        | Server-side only | ✅ Sí      | Clave OpenAI para LangGraph    |
+| Variable                | Scope            | Requerida | Descripción                 |
+| ----------------------- | ---------------- | --------- | --------------------------- |
+| `BACKEND_JAVA_ENDPOINT` | Server-side only | ✅ Sí     | URL completa backend Java   |
+| `OPENAI_API_KEY`        | Server-side only | ✅ Sí     | Clave OpenAI para LangGraph |
 
 Ambas variables son exclusivamente server-side. Next.js garantiza que no lleguen al navegador.
