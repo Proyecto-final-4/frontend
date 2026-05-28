@@ -8,7 +8,7 @@ const LANGGRAPH_API_URL = process.env.LANGGRAPH_API_URL ?? "http://localhost:202
 interface LangGraphMessage {
   id?: string;
   type: string;
-  content: string | Array<{ type: string; text: string }>;
+  content: string | Array<{ type: string; text?: string }>;
 }
 
 /** GET /api/threads/[id]/history — returns the conversation messages for a thread */
@@ -45,7 +45,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           typeof m.content === "string"
             ? m.content
             : m.content
-                .filter((c) => c.type === "text")
+                .filter((c) => c.type === "text" && typeof c.text === "string")
                 .map((c) => c.text)
                 .join("");
         if (m.type === "human") {

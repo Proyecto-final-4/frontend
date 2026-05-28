@@ -3,12 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Mic, MicOff, Sparkles } from "lucide-react";
+import { ArrowUp, FileText, Mic, MicOff, Paperclip, Sparkles, X } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 import { InterruptBubble } from "./InterruptBubble";
 import type { ChatMessage, AssistantPart } from "@/types/chat";
 import { emptyAssistantParts, applyToken, applyToolUpdate } from "@/lib/chat-reducers";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import {
+  ACCEPTED_DOCUMENT_INPUT,
+  formatDocumentSize,
+  validateDocumentFiles,
+} from "@/lib/document-attachments";
 
 const PROMPT_CHIPS = ["Verificar patrimonio", "Top gastos del mes", "Predicciones de ahorro"];
 
@@ -47,8 +52,11 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(initialThreadId ?? null);
   const [input, setInput] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const speechBaseRef = useRef("");
 
   const {
@@ -265,25 +273,56 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
   const sendMessage = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
-      if (!trimmed || isStreaming) return;
+      const filesToSend = selectedFiles;
+      if ((!trimmed && filesToSend.length === 0) || isStreaming) return;
+
+      const validationError = validateDocumentFiles(filesToSend);
+      if (validationError) {
+        setFileError(validationError);
+        return;
+      }
 
       stopSpeech();
       speechBaseRef.current = "";
 
       setMessages((prev) => [
         ...prev,
-        { id: `user-${Date.now()}`, role: "user", content: trimmed },
+        {
+          id: `user-${Date.now()}`,
+          role: "user",
+          content: trimmed,
+          attachments: filesToSend.map((file) => ({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+          })),
+        },
       ]);
       setInput("");
+      setSelectedFiles([]);
+      setFileError(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setIsStreaming(true);
       setStreamingParts(emptyAssistantParts());
 
       try {
-        const res = await fetch("/api/chat/stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: trimmed, threadId }),
-        });
+        const res =
+          filesToSend.length > 0
+            ? await fetch("/api/chat/stream", {
+                method: "POST",
+                body: (() => {
+                  const formData = new FormData();
+                  formData.set("message", trimmed);
+                  if (threadId) formData.set("threadId", threadId);
+                  filesToSend.forEach((file) => formData.append("files", file));
+                  return formData;
+                })(),
+              })
+            : await fetch("/api/chat/stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: trimmed, threadId }),
+              });
         await consumeStream(res, threadId);
       } catch (err) {
         console.error("[chat] stream error:", err);
@@ -308,7 +347,7 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
         setStreamingParts(null);
       }
     },
-    [isStreaming, threadId, consumeStream, stopSpeech],
+    [isStreaming, selectedFiles, threadId, consumeStream, stopSpeech],
   );
 
   // ── Resume after a HITL interrupt ──────────────────────────────────────────
@@ -372,6 +411,27 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
     toggleSpeech();
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const incoming = Array.from(event.target.files ?? []);
+    const nextFiles = [...selectedFiles, ...incoming];
+    const validationError = validateDocumentFiles(nextFiles);
+    if (validationError) {
+      setFileError(validationError);
+      event.target.value = "";
+      return;
+    }
+
+    setSelectedFiles(nextFiles);
+    setFileError(null);
+    event.target.value = "";
+  };
+
+  const removeSelectedFile = (index: number) => {
+    const nextFiles = selectedFiles.filter((_, currentIndex) => currentIndex !== index);
+    setSelectedFiles(nextFiles);
+    setFileError(validateDocumentFiles(nextFiles));
+  };
+
   const inputDisabled = isStreaming || loadingHistory;
   const micTitle = !isSpeechSupported
     ? "Dictado por voz no disponible en este navegador"
@@ -399,7 +459,14 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
         >
           {messages.map((msg) => {
             if (msg.role === "user") {
-              return <MessageBubble key={msg.id} role="user" content={msg.content} />;
+              return (
+                <MessageBubble
+                  key={msg.id}
+                  role="user"
+                  content={msg.content}
+                  attachments={msg.attachments}
+                />
+              );
             }
             if (msg.role === "assistant") {
               return <MessageBubble key={msg.id} role="assistant" parts={msg.parts} />;
@@ -460,6 +527,25 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
 
           {/* Input row */}
           <div className="flex items-end bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-lg px-3 py-2 gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={ACCEPTED_DOCUMENT_INPUT}
+              onChange={handleFileChange}
+              disabled={inputDisabled}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={inputDisabled}
+              title="Adjuntar documento"
+              aria-label="Adjuntar documento"
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0 mb-0.5 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
             <textarea
               ref={textareaRef}
               rows={1}
@@ -496,16 +582,45 @@ export function ChatInterface({ userName, initialThreadId }: Props) {
             <button
               type="button"
               onClick={() => sendMessage(input)}
-              disabled={inputDisabled || !input.trim()}
+              disabled={inputDisabled || (!input.trim() && selectedFiles.length === 0)}
               className="bg-primary text-on-primary w-9 h-9 rounded-xl flex items-center justify-center transition-all hover:opacity-90 active:scale-95 flex-shrink-0 mb-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ArrowUp className="w-4 h-4" />
             </button>
           </div>
 
+          {selectedFiles.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={`${file.name}-${file.size}-${index}`}
+                  className="flex max-w-full items-center gap-2 rounded-full border border-outline-variant/40 bg-surface-container-lowest px-3 py-1.5 text-xs text-on-surface-variant shadow-sm"
+                >
+                  <FileText className="h-3.5 w-3.5 shrink-0" />
+                  <span className="max-w-[13rem] truncate font-medium">{file.name}</span>
+                  <span className="shrink-0 opacity-70">{formatDocumentSize(file.size)}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeSelectedFile(index)}
+                    className="rounded-full p-0.5 hover:bg-surface-container-high"
+                    aria-label={`Quitar ${file.name}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {speechError && (
             <p className="text-center mt-2 text-[10px] text-error font-medium" role="alert">
               {speechError}
+            </p>
+          )}
+
+          {fileError && (
+            <p className="text-center mt-2 text-[10px] text-error font-medium" role="alert">
+              {fileError}
             </p>
           )}
 

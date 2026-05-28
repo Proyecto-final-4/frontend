@@ -1,6 +1,8 @@
 import ReactMarkdown from "react-markdown";
+import { FileText } from "lucide-react";
 import type { AssistantPart } from "@/types/chat";
 import { ToolCallBubble } from "./ToolCallBubble";
+import { formatDocumentSize } from "@/lib/document-attachments";
 
 // ── Markdown renderer ─────────────────────────────────────────────────────────
 
@@ -37,6 +39,11 @@ const MD_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>["components"] = 
 interface UserBubbleProps {
   role: "user";
   content: string;
+  attachments?: Array<{
+    name: string;
+    type: string;
+    size: number;
+  }>;
 }
 
 interface AssistantBubbleProps {
@@ -54,7 +61,21 @@ export function MessageBubble(props: Props) {
     return (
       <div className="flex justify-end">
         <div className="max-w-[75%] bg-primary text-primary-foreground px-4 py-3 rounded-2xl rounded-br-sm text-sm font-medium leading-relaxed whitespace-pre-wrap shadow-sm">
-          {props.content}
+          {props.content && <div>{props.content}</div>}
+          {props.attachments?.length ? (
+            <div className="mt-3 space-y-1.5 whitespace-normal">
+              {props.attachments.map((file) => (
+                <div
+                  key={`${file.name}-${file.size}`}
+                  className="flex items-center gap-2 rounded-xl bg-white/15 px-2.5 py-2 text-xs"
+                >
+                  <FileText className="h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0 flex-1 truncate">{file.name}</span>
+                  <span className="shrink-0 opacity-75">{formatDocumentSize(file.size)}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     );

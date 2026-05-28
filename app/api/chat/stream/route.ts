@@ -2,10 +2,57 @@ import { cookies } from "next/headers";
 import { Client } from "@langchain/langgraph-sdk";
 import { COOKIE_TOKEN, COOKIE_USER_INFO } from "@/shared/constants/auth";
 import type { UserInfo } from "@/types/auth";
+import { validateDocumentFiles } from "@/lib/document-attachments";
 import { buildSSEStream } from "../_stream-helpers";
 
 const LANGGRAPH_API_URL = process.env.LANGGRAPH_API_URL ?? "http://localhost:2024";
 const ASSISTANT_ID = process.env.LANGGRAPH_ASSISTANT_ID ?? "financial_agent";
+
+interface SerializedAttachment {
+  filename: string;
+  mimeType: string;
+  size: number;
+  base64: string;
+}
+
+async function parseChatRequest(request: Request): Promise<{
+  message: string;
+  threadId?: string | null;
+  attachments: SerializedAttachment[];
+}> {
+  const contentType = request.headers.get("content-type") ?? "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData();
+    const message = String(formData.get("message") ?? "").trim();
+    const rawThreadId = formData.get("threadId");
+    const threadId = typeof rawThreadId === "string" && rawThreadId ? rawThreadId : null;
+    const files = formData.getAll("files").filter((value): value is File => value instanceof File);
+
+    const validationError = validateDocumentFiles(
+      files.map((file) => ({ name: file.name, type: file.type, size: file.size })),
+    );
+    if (validationError) throw new Response(validationError, { status: 400 });
+
+    const attachments = await Promise.all(
+      files.map(async (file) => ({
+        filename: file.name,
+        mimeType: file.type,
+        size: file.size,
+        base64: Buffer.from(await file.arrayBuffer()).toString("base64"),
+      })),
+    );
+
+    return { message, threadId, attachments };
+  }
+
+  const { message, threadId } = (await request.json()) as {
+    message: string;
+    threadId?: string | null;
+  };
+
+  return { message: message.trim(), threadId, attachments: [] };
+}
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -23,14 +70,22 @@ export async function POST(request: Request) {
       userInfo = JSON.parse(decodeURIComponent(userInfoRaw)) as UserInfo;
       userName = userInfo.name;
     } catch {
-      // ignore
+      // ignore invalid optional profile cookie
     }
   }
 
-  const { message, threadId: existingThreadId } = (await request.json()) as {
-    message: string;
-    threadId?: string | null;
-  };
+  let parsedRequest: Awaited<ReturnType<typeof parseChatRequest>>;
+  try {
+    parsedRequest = await parseChatRequest(request);
+  } catch (err) {
+    if (err instanceof Response) return err;
+    return new Response("Invalid request body", { status: 400 });
+  }
+
+  const { message, threadId: existingThreadId, attachments } = parsedRequest;
+  if (!message && attachments.length === 0) {
+    return new Response("message or files are required", { status: 400 });
+  }
 
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
@@ -46,7 +101,9 @@ export async function POST(request: Request) {
     try {
       let threadId = existingThreadId ?? undefined;
       if (!threadId) {
-        const title = message.length > 40 ? `${message.slice(0, 40).trimEnd()}…` : message;
+        const titleSource = message || attachments[0]?.filename || "Documento adjunto";
+        const title =
+          titleSource.length > 40 ? `${titleSource.slice(0, 40).trimEnd()}...` : titleSource;
         const userId = userInfo?.id != null ? String(userInfo.id) : undefined;
         const thread = await client.threads.create({
           metadata: { ...(userId ? { userId } : {}), title },
@@ -57,11 +114,24 @@ export async function POST(request: Request) {
 
       const runStream = client.runs.stream(threadId, ASSISTANT_ID, {
         input: {
-          messages: [{ role: "user", content: message }],
+          messages:
+            attachments.length > 0
+              ? []
+              : [
+                  {
+                    role: "user",
+                    content: message,
+                  },
+                ],
           token,
         },
         config: {
-          configurable: { token, userName },
+          configurable: {
+            token,
+            userName,
+            documentMessage: attachments.length > 0 ? message : undefined,
+            documentAttachments: attachments.length > 0 ? attachments : undefined,
+          },
         },
         streamMode: ["messages", "events", "updates"],
       });

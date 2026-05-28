@@ -24,6 +24,11 @@ export interface UserMessage {
   id: string;
   role: "user";
   content: string;
+  attachments?: Array<{
+    name: string;
+    type: string;
+    size: number;
+  }>;
 }
 
 export interface AssistantMessage {
